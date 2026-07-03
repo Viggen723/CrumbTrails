@@ -4,6 +4,8 @@ plugins {
 
     id("com.google.devtools.ksp")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+    id("com.google.gms.google-services")
+
 }
 
 android {
@@ -75,4 +77,12 @@ dependencies {
     ksp("androidx.room:room-compiler:$room_version")
 
     implementation("androidx.navigation:navigation-compose:2.9.8")
+
+    // Firebase BoM
+    implementation(platform("com.google.firebase:firebase-bom:34.15.0"))
+
+    // TODO: Add the dependencies for Firebase products you want to use
+    // When using the BoM, don't specify versions in Firebase dependencies
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-database")
 }
