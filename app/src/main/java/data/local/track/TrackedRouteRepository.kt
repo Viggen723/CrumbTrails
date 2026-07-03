@@ -8,12 +8,14 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.util.UUID
 
+// TODO Make the tracked route its own data class outside of this
 /** A completed session, decoded back into the shape the UI actually wants. */
 data class TrackedRoute(
     val id: String,
+    val tripName: String,
     val startedAtEpochMillis: Long,
     val endedAtEpochMillis: Long,
-    val path: List<LatLng>
+    val trackedRoute: List<LatLng>
 )
 
 class TrackedRouteRepository(private val dao: TrackedRouteDao) {
@@ -46,8 +48,9 @@ class TrackedRouteRepository(private val dao: TrackedRouteDao) {
 
     private fun TrackedRouteEntity.toDomain() = TrackedRoute(
         id = id,
+        tripName = tripName,
         startedAtEpochMillis = startedAtEpochMillis,
         endedAtEpochMillis = endedAtEpochMillis,
-        path = if (routeString.isEmpty()) emptyList() else PolyUtil.decode(routeString)
+        trackedRoute = if (routeString.isEmpty()) emptyList() else PolyUtil.decode(routeString)
     )
 }

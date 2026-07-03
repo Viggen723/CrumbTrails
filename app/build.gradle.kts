@@ -4,8 +4,6 @@ plugins {
 
     id("com.google.devtools.ksp")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
-    id("com.google.gms.google-services")
-
 }
 
 android {
@@ -16,7 +14,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.routetracker"
-        minSdk = 33
+        minSdk = 34
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -78,11 +76,5 @@ dependencies {
 
     implementation("androidx.navigation:navigation-compose:2.9.8")
 
-    // Firebase BoM
-    implementation(platform("com.google.firebase:firebase-bom:34.15.0"))
-
-    // TODO: Add the dependencies for Firebase products you want to use
-    // When using the BoM, don't specify versions in Firebase dependencies
-    implementation("com.google.firebase:firebase-analytics")
-    implementation("com.google.firebase:firebase-database")
+    implementation("androidx.photopicker:photopicker-compose:1.0.0-alpha01")
 }

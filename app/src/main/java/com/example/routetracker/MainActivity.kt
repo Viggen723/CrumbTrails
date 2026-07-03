@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DynamicFeed
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.Icon
@@ -52,12 +53,7 @@ fun Application() {
             navController = navController,
             modifier = Modifier.fillMaxSize().padding(paddingValues)
         )
-
-        Text(modifier = Modifier.padding(16.dp),
-            textAlign = TextAlign.End,
-            text = "RTS Tracking")
     }
-
 }
 
 @Composable
@@ -89,6 +85,12 @@ fun BottomBar(navController: NavHostController) {
             label = { Text("History") },
             selected = currentRoute?.hierarchy?.any { it.route == RouteTrackerDestination.HISTORY.name } == true,
             onClick = { navigateToTab(RouteTrackerDestination.HISTORY.name) }
+        )
+        NavigationBarItem(
+            icon = { Icon(imageVector = Icons.Filled.DynamicFeed, contentDescription = "Feed") },
+            label = { Text("Feed") },
+            selected = false,
+            onClick = { }
         )
     }
 }

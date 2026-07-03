@@ -11,7 +11,7 @@ import com.example.routetracker.data.local.track.TrackedRouteDao
     entities = [
         TrackedRouteEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class RouteTrackerDatabase : RoomDatabase() {

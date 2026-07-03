@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -24,6 +25,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -86,6 +89,15 @@ fun TrackingUI(
             }
         }
 
+        // The title is modified here
+        Text(
+            modifier = Modifier
+                .align(alignment = Alignment.TopCenter)
+                .padding(16.dp),
+            text = "Crumb Trails",
+            style = MaterialTheme.typography.titleMedium,
+        )
+
         TrackingButton(
             isTracking = viewModel.isTracking,
             onClick = {
@@ -124,7 +136,14 @@ private fun TrackingButton(
         )
     ) {
         Text(
-            text = if (isTracking) "Stop tracking" else "Start tracking",
+            text = if (isTracking)
+            {
+                "Stop tracking"
+            }
+            else
+            {
+                "Start tracking"
+            },
             style = MaterialTheme.typography.titleMedium
         )
     }
