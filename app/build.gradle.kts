@@ -77,4 +77,5 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.9.8")
 
     implementation("androidx.photopicker:photopicker-compose:1.0.0-alpha01")
+    implementation("com.google.code.gson:gson:2.10.1")
 }

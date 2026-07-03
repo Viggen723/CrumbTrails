@@ -16,10 +16,13 @@ interface TrackedRouteDao {
     @Query("SELECT * FROM tracked_routes ORDER BY startedAtEpochMillis DESC")
     fun getAll(): Flow<List<TrackedRouteEntity>>
 
-    // This function will be used for transferring the routes to the Firebase server
+    // This function will be used for transferring the routes to the Firebase server (I think it will)
     @Query("SELECT * FROM tracked_routes WHERE id = :id")
     suspend fun getById(id: String): TrackedRouteEntity?
 
     @Query("DELETE FROM tracked_routes WHERE id = :id")
     suspend fun delete(id: String)
+
+    @Query("DELETE FROM tracked_routes")
+    suspend fun deleteAllRoutes()
 }

@@ -4,16 +4,19 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import com.example.routetracker.data.local.track.TrackedRouteEntity
 import com.example.routetracker.data.local.track.TrackedRouteDao
+import com.example.routetracker.utils.Converters
 
 @Database(
     entities = [
         TrackedRouteEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
+@TypeConverters(Converters::class)
 abstract class RouteTrackerDatabase : RoomDatabase() {
 
     abstract fun trackedRouteDao(): TrackedRouteDao

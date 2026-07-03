@@ -38,7 +38,7 @@ fun HistoryUI(
     if (sessions.isEmpty()) {
         Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(
-                "No tracked routes yet - start tracking to save one.",
+                "No tracked routes yet... Start tracking to save one!",
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }

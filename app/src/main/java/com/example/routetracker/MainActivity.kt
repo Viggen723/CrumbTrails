@@ -75,13 +75,13 @@ fun BottomBar(navController: NavHostController) {
 
     NavigationBar {
         NavigationBarItem(
-            icon = { Icon(Icons.Filled.Map, contentDescription = "Track") },
+            icon = { Icon(imageVector = Icons.Filled.Map, contentDescription = "Track") },
             label = { Text("Track") },
             selected = currentRoute?.hierarchy?.any { it.route == RouteTrackerDestination.TRACK.name } == true,
             onClick = { navigateToTab(RouteTrackerDestination.TRACK.name) }
         )
         NavigationBarItem(
-            icon = { Icon(Icons.Filled.History, contentDescription = "History") },
+            icon = { Icon(imageVector = Icons.Filled.History, contentDescription = "History") },
             label = { Text("History") },
             selected = currentRoute?.hierarchy?.any { it.route == RouteTrackerDestination.HISTORY.name } == true,
             onClick = { navigateToTab(RouteTrackerDestination.HISTORY.name) }

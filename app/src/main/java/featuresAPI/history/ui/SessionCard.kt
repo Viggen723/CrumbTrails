@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -78,7 +79,20 @@ fun SessionCard(
 
             }
 
+            // TODO Here is the share button to connect! I would love to have a dialog come up
+            // to have the user put in a description in for the trip
             Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(
+                    onClick = {}
+
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Share,
+                        contentDescription = "Share to feed",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
                 IconButton(
                     onClick = {
                         if (isEmbeddedPhotoPickerSupported()) {
@@ -101,7 +115,7 @@ fun SessionCard(
                     Icon(
                         imageVector = Icons.Filled.Delete,
                         contentDescription = "Delete session",
-                        tint = MaterialTheme.colorScheme.error
+                        tint = MaterialTheme.colorScheme.error // Red
                     )
                 }
             }
