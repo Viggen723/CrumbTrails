@@ -1,12 +1,15 @@
 package featuresAPI.feed.data
 
+import android.net.Uri
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.storage.FirebaseStorage
 import com.google.maps.android.PolyUtil
 import data.local.track.TrackedRoute
 import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -25,18 +28,25 @@ data class SharedRoutePost(
 )
 
 class FeedRepository(
-    private val database: FirebaseDatabase = FirebaseDatabase.getInstance()
+    private val database: FirebaseDatabase = FirebaseDatabase.getInstance(),
+    private val storage: FirebaseStorage = FirebaseStorage.getInstance()
 ) {
 
     suspend fun uploadSharedRoute(
         route: TrackedRoute,
         caption: String,
-        userId: String?
+        userId: String?,
+        photoUris: List<Uri> = emptyList()
     ): Result<Unit> {
         return try {
             val postReference = database.getReference("sharedRoutes").push()
             val postId = postReference.key
                 ?: return Result.failure(IllegalStateException("Could not create shared route id"))
+            val photoUrls = uploadSharedRoutePhotos(
+                userId = userId,
+                postId = postId,
+                photoUris = photoUris
+            )
             val routeString = PolyUtil.encode(route.trackedRoute)
             val payload = mapOf(
                 "postId" to postId,
@@ -47,9 +57,7 @@ class FeedRepository(
                 "routeString" to routeString,
                 "createdAt" to System.currentTimeMillis(),
                 "pointCount" to route.trackedRoute.size,
-                // TODO: Upload selected photos to Firebase Storage.
-                // TODO: Replace empty photoUrls with Firebase Storage download URLs.
-                "photoUrls" to emptyList<String>()
+                "photoUrls" to photoUrls
             )
 
             suspendCancellableCoroutine { continuation ->
@@ -67,6 +75,27 @@ class FeedRepository(
             }
         } catch (exception: Exception) {
             Result.failure(exception)
+        }
+    }
+
+    private suspend fun uploadSharedRoutePhotos(
+        userId: String?,
+        postId: String,
+        photoUris: List<Uri>
+    ): List<String> {
+        if (photoUris.isEmpty()) {
+            // no photos selected, so this post just gets an empty photoUrls list
+            return emptyList()
+        }
+
+        val storageUserId = userId?.takeIf { it.isNotBlank() } ?: "unknownUser"
+
+        // upload photos first so the post can save real download URLs
+        return photoUris.mapIndexed { index, uri ->
+            val photoReference = storage.reference
+                .child("sharedRoutes/$storageUserId/$postId/photos/$index.jpg")
+            photoReference.putFile(uri).awaitTask()
+            photoReference.downloadUrl.awaitTask().toString()
         }
     }
 
@@ -120,4 +149,19 @@ class FeedRepository(
     }
 
     // TODO: Add delete post functionality later.
+}
+
+private suspend fun <T> com.google.android.gms.tasks.Task<T>.awaitTask(): T {
+    return suspendCancellableCoroutine { continuation ->
+        addOnSuccessListener { result ->
+            if (continuation.isActive) {
+                continuation.resume(result)
+            }
+        }
+        addOnFailureListener { exception ->
+            if (continuation.isActive) {
+                continuation.resumeWithException(exception)
+            }
+        }
+    }
 }

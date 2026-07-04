@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.routetracker.featuresAPI.history.viewModel.HistoryViewModel
+import com.example.routetracker.featuresAPI.history.viewModel.ShareStatus
 import data.local.track.TrackedRoute
 
 @Composable
@@ -34,6 +35,7 @@ fun HistoryUI(
     viewModel: HistoryViewModel = viewModel()
 ) {
     val sessions by viewModel.sessions.collectAsState()
+    val shareStatus by viewModel.shareStatus.collectAsState()
     var selectedSession by remember { mutableStateOf<TrackedRoute?>(null) }
 
     // keep the selected session around while the delete dialog is open
@@ -110,7 +112,8 @@ fun HistoryUI(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        viewModel.shareRouteToFeed(session, shareCaption)
+                        val selectedPhotoUris = sessionPhotosMap[session.id].orEmpty()
+                        viewModel.shareRouteToFeed(session, shareCaption, selectedPhotoUris)
                         sessionPendingShare = null
                         shareCaption = ""
                     }
@@ -131,29 +134,35 @@ fun HistoryUI(
         )
     }
 
-    LazyColumn(
+    Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+            .padding(horizontal = 16.dp, vertical = 16.dp)
     ) {
-        items(sessions, key = { it.id }) { session ->
-            val attachedPhotoCount = sessionPhotosMap[session.id]?.size ?: 0
+        ShareStatusText(shareStatus = shareStatus)
 
-            SessionCard(
-                session = session,
-                photoCount = attachedPhotoCount,
-                onClick = { selectedSession = session },
-                onDelete = { sessionPendingDeletion = session },
-                onShare = {
-                    sessionPendingShare = session
-                    shareCaption = ""
-                },
-                onTriggerEmbeddedPhoto = { activePhotoSessionId = session.id },
-                onLegacyPhotoSelection = { uris ->
-                    sessionPhotosMap[session.id] = (sessionPhotosMap[session.id] ?: emptyList()) + uris
-                }
-            )
+        LazyColumn(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(sessions, key = { it.id }) { session ->
+                val attachedPhotoCount = sessionPhotosMap[session.id]?.size ?: 0
+
+                SessionCard(
+                    session = session,
+                    photoCount = attachedPhotoCount,
+                    onClick = { selectedSession = session },
+                    onDelete = { sessionPendingDeletion = session },
+                    onShare = {
+                        sessionPendingShare = session
+                        shareCaption = ""
+                    },
+                    onTriggerEmbeddedPhoto = { activePhotoSessionId = session.id },
+                    onLegacyPhotoSelection = { uris ->
+                        sessionPhotosMap[session.id] = (sessionPhotosMap[session.id] ?: emptyList()) + uris
+                    }
+                )
+            }
         }
     }
 
@@ -174,6 +183,30 @@ fun HistoryUI(
                 }
             },
             onDismiss = { activePhotoSessionId = null }
+        )
+    }
+}
+
+@Composable
+private fun ShareStatusText(shareStatus: ShareStatus) {
+    val message = when (shareStatus) {
+        ShareStatus.Idle -> null
+        ShareStatus.Loading -> "Sharing..."
+        ShareStatus.Success -> "Shared successfully."
+        is ShareStatus.Error -> "Share failed: ${shareStatus.message}"
+    }
+
+    message?.let {
+        Text(
+            text = it,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp),
+            style = MaterialTheme.typography.bodyMedium,
+            color = when (shareStatus) {
+                is ShareStatus.Error -> MaterialTheme.colorScheme.error
+                else -> MaterialTheme.colorScheme.onSurface
+            }
         )
     }
 }
