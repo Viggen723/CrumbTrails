@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,11 +18,21 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.routetracker.R
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.maps.android.PolyUtil
+import com.google.maps.android.compose.CameraPositionState
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.Polyline
 import featuresAPI.feed.data.SharedRoutePost
 import featuresAPI.feed.viewModel.FeedViewModel
 import java.text.DateFormat
@@ -104,9 +115,64 @@ fun FeedCards(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            // later we can use routeString to draw a mini map preview
-            // TODO: Show route preview map from routeString.
+            FeedRoutePreview(
+                routeString = post.routeString,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 14.dp, end = 14.dp, bottom = 14.dp)
+            )
+
             // TODO: Show uploaded photos from photoUrls.
+        }
+    }
+}
+
+@Composable
+private fun FeedRoutePreview(
+    routeString: String,
+    modifier: Modifier = Modifier
+) {
+    val routePoints = remember(routeString) {
+        // decode the saved route so Feed can draw it
+        runCatching {
+            if (routeString.isBlank()) emptyList() else PolyUtil.decode(routeString)
+        }.getOrDefault(emptyList())
+    }
+
+    if (routePoints.isEmpty()) return
+
+    val cameraPositionState = remember(routeString) {
+        val centerPoint = routePoints[routePoints.size / 2]
+        CameraPositionState(
+            position = CameraPosition.fromLatLngZoom(centerPoint, 14f)
+        )
+    }
+    val uiSettings = remember {
+        MapUiSettings(
+            zoomControlsEnabled = false,
+            mapToolbarEnabled = false,
+            myLocationButtonEnabled = false,
+            scrollGesturesEnabled = false,
+            zoomGesturesEnabled = false,
+            tiltGesturesEnabled = false,
+            rotationGesturesEnabled = false
+        )
+    }
+
+    // tiny map preview for the shared route
+    GoogleMap(
+        modifier = modifier
+            .height(150.dp)
+            .clip(RoundedCornerShape(12.dp)),
+        cameraPositionState = cameraPositionState,
+        uiSettings = uiSettings
+    ) {
+        if (routePoints.size > 1) {
+            Polyline(
+                points = routePoints,
+                color = colorResource(id = R.color.route_path),
+                width = 10f
+            )
         }
     }
 }
