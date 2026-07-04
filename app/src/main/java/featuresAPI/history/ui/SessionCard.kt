@@ -35,6 +35,7 @@ fun SessionCard(
     photoCount: Int,
     onClick: () -> Unit,
     onDelete: () -> Unit,
+    onShare: () -> Unit,
     onTriggerEmbeddedPhoto: () -> Unit,
     onLegacyPhotoSelection: (List<Uri>) -> Unit,
     modifier: Modifier = Modifier
@@ -79,11 +80,9 @@ fun SessionCard(
 
             }
 
-            // TODO Here is the share button to connect! I would love to have a dialog come up
-            // to have the user put in a description in for the trip
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(
-                    onClick = {}
+                    onClick = onShare
 
                 ) {
                     Icon(

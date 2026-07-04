@@ -4,17 +4,14 @@ import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog // Added
-import androidx.compose.material3.Card
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -26,9 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.routetracker.data.local.track.TrackedRoute
 import com.example.routetracker.featuresAPI.history.viewModel.HistoryViewModel
@@ -41,8 +36,10 @@ fun HistoryUI(
     val sessions by viewModel.sessions.collectAsState()
     var selectedSession by remember { mutableStateOf<TrackedRoute?>(null) }
 
-    // Help from AI to make this deletion conformation
+    // keep the selected session around while the delete dialog is open
     var sessionPendingDeletion by remember { mutableStateOf<TrackedRoute?>(null) }
+    var sessionPendingShare by remember { mutableStateOf<TrackedRoute?>(null) }
+    var shareCaption by remember { mutableStateOf("") }
 
     var activePhotoSessionId by remember { mutableStateOf<Any?>(null) }
     val sessionPhotosMap = remember { mutableStateMapOf<Any, List<Uri>>() }
@@ -91,6 +88,49 @@ fun HistoryUI(
         )
     }
 
+    sessionPendingShare?.let { session ->
+        AlertDialog(
+            onDismissRequest = {
+                sessionPendingShare = null
+                shareCaption = ""
+            },
+            title = { Text(text = "Share Trip") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(text = "Add a caption for ${session.tripName}.")
+                    OutlinedTextField(
+                        value = shareCaption,
+                        onValueChange = { shareCaption = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text("Caption") },
+                        singleLine = false
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.shareRouteToFeed(session, shareCaption)
+                        sessionPendingShare = null
+                        shareCaption = ""
+                    }
+                ) {
+                    Text("Share")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        sessionPendingShare = null
+                        shareCaption = ""
+                    }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -104,8 +144,11 @@ fun HistoryUI(
                 session = session,
                 photoCount = attachedPhotoCount,
                 onClick = { selectedSession = session },
-                // 3. Changed: Stage the session for deletion instead of instantly calling the ViewModel
                 onDelete = { sessionPendingDeletion = session },
+                onShare = {
+                    sessionPendingShare = session
+                    shareCaption = ""
+                },
                 onTriggerEmbeddedPhoto = { activePhotoSessionId = session.id },
                 onLegacyPhotoSelection = { uris ->
                     sessionPhotosMap[session.id] = (sessionPhotosMap[session.id] ?: emptyList()) + uris
