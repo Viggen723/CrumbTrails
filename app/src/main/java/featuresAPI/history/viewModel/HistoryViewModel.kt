@@ -1,6 +1,7 @@
 package com.example.routetracker.featuresAPI.history.viewModel
 
 import android.app.Application
+import androidx.compose.runtime.Composable
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.routetracker.data.local.RouteTrackerDatabase

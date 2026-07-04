@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -34,6 +35,7 @@ import com.example.routetracker.R
 import com.example.routetracker.featuresAPI.tracking.viewModel.TrackingViewModel
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Polyline
 
 @Composable
@@ -60,6 +62,7 @@ fun TrackingUI(
         if (hasLocationPermission) viewModel.loadUserLocation()
     }
 
+    // Could not get this to work even with internet research and AI help. Need assistance
     LaunchedEffect(Unit) {
         if (!hasLocationPermission) {
             val permissions = buildList {
@@ -75,8 +78,15 @@ fun TrackingUI(
     }
 
     Box(modifier = modifier.fillMaxSize()) {
+
+        // Got to make a separate variable to pass through the GoogleMaps object
+        val uiSettings = remember {
+            MapUiSettings(zoomControlsEnabled = false)
+        }
+
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
+            uiSettings = uiSettings,
             cameraPositionState = viewModel.cameraPositionState,
             properties = MapProperties(isMyLocationEnabled = hasLocationPermission)
         ) {
@@ -125,8 +135,8 @@ private fun TrackingButton(
 ) {
     Button(
         onClick = onClick,
-        modifier = modifier.height(56.dp),
-        shape = RoundedCornerShape(28.dp),
+        modifier = modifier.height(56.dp).size(width = 240.dp, height = 80.dp),
+        shape = RoundedCornerShape(5.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = if (isTracking) {
                 colorResource(id = R.color.track_recording)
@@ -138,11 +148,11 @@ private fun TrackingButton(
         Text(
             text = if (isTracking)
             {
-                "Stop tracking"
+                "Stop tracking!"
             }
             else
             {
-                "Start tracking"
+                "Start tracking!"
             },
             style = MaterialTheme.typography.titleMedium
         )
