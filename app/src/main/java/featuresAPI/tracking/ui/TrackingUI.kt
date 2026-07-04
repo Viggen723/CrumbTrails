@@ -3,6 +3,7 @@ package com.example.routetracker.featuresAPI.tracking.ui
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.gestures.snapping.SnapPosition
@@ -33,8 +34,10 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.app.PendingIntentCompat.getActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.routetracker.MainActivity
 import com.example.routetracker.R
 import com.example.routetracker.featuresAPI.tracking.viewModel.TrackingViewModel
 import com.google.maps.android.compose.GoogleMap
@@ -49,6 +52,7 @@ fun TrackingUI(
 ) {
     val context = LocalContext.current
 
+    // All the permissions stuff should be moved to separate file
     var hasLocationPermission by remember {
         mutableStateOf(
             ContextCompat.checkSelfPermission(
@@ -58,28 +62,48 @@ fun TrackingUI(
         )
     }
 
+    var hasNotificationPermission by remember {
+        mutableStateOf(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
+            } else {
+                true // Automatically allows it on older APIs
+            }
+        )
+    }
+
     // Fields that will be for managing the dialog to input route name
     var showTripNameDialog by remember { mutableStateOf(false) }
     var inputTripName by remember { mutableStateOf("") }
 
-    // The tracking service is required to show a persistent notification NOT WORKING
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { results ->
         hasLocationPermission = results[Manifest.permission.ACCESS_FINE_LOCATION] == true
-        if (hasLocationPermission) viewModel.loadUserLocation()
+        hasNotificationPermission = results[Manifest.permission.POST_NOTIFICATIONS] ?: true
+
+        if (hasLocationPermission) {
+            viewModel.loadUserLocation()
+        }
     }
 
     // Could not get this to work even with internet research and AI help. Need assistance
     LaunchedEffect(Unit) {
+        val permissionsToRequest = mutableListOf<String>()
+
         if (!hasLocationPermission) {
-            val permissions = buildList {
-                add(Manifest.permission.ACCESS_FINE_LOCATION)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    add(Manifest.permission.POST_NOTIFICATIONS)
-                }
-            }
-            permissionLauncher.launch(permissions.toTypedArray())
+            permissionsToRequest.add(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !hasNotificationPermission) {
+            permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
+        }
+
+        if (permissionsToRequest.isNotEmpty()) {
+            permissionLauncher.launch(permissionsToRequest.toTypedArray())
         } else {
             viewModel.loadUserLocation()
         }
@@ -87,6 +111,7 @@ fun TrackingUI(
 
     if (showTripNameDialog)
     {
+
         AlertDialog(
             onDismissRequest = {
                showTripNameDialog = false
@@ -105,6 +130,7 @@ fun TrackingUI(
                 }
             },
             confirmButton = {
+
                 TextButton(
                     onClick = {
                         val finalName =
@@ -121,6 +147,8 @@ fun TrackingUI(
 
                         showTripNameDialog = false
                         inputTripName = ""
+
+                        Toast.makeText(context, "Route Saved!", Toast.LENGTH_SHORT).show()
                     }
                 ){
                     Text("Save Route")

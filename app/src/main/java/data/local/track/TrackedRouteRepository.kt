@@ -2,20 +2,12 @@ package com.example.routetracker.data.local.track
 
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.PolyUtil
+import data.local.track.TrackedRoute
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.util.UUID
-
-// TODO Make the tracked route its own data class outside of this
-data class TrackedRoute(
-    val id: String,
-    val tripName: String,
-    val startedAtEpochMillis: Long,
-    val endedAtEpochMillis: Long,
-    val trackedRoute: List<LatLng>
-)
 
 class TrackedRouteRepository(private val dao: TrackedRouteDao) {
 

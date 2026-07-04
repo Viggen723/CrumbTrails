@@ -34,6 +34,7 @@ class MapRepository(private val context: Context) {
     }
 
     // Important to tune the refresh rate here to tell how many points to do
+    // TODO I want to make this adjustable via the menu options
     @SuppressLint("MissingPermission")
     fun observeLocationUpdates(): Flow<LatLng> = callbackFlow {
         val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 5_000L)

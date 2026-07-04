@@ -21,12 +21,12 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.routetracker.R
-import com.example.routetracker.data.local.track.TrackedRoute
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Polyline
+import data.local.track.TrackedRoute
 
 @Composable
 fun SessionMapDialog(

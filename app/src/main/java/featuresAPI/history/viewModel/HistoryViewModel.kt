@@ -4,9 +4,9 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.routetracker.data.local.RouteTrackerDatabase
-import com.example.routetracker.data.local.track.TrackedRoute
 import com.example.routetracker.data.local.track.TrackedRouteRepository
 import com.google.firebase.auth.FirebaseAuth
+import data.local.track.TrackedRoute
 import featuresAPI.feed.data.FeedRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

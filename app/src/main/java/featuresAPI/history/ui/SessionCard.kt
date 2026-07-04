@@ -25,7 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.routetracker.data.local.track.TrackedRoute
+import data.local.track.TrackedRoute
 import java.text.DateFormat
 import java.util.Date
 
