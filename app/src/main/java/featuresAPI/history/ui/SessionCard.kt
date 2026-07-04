@@ -48,8 +48,7 @@ fun SessionCard(
 
     Card(
         modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
@@ -60,7 +59,11 @@ fun SessionCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(modifier = Modifier.weight(1f)) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable(onClick = onClick)
+            ) {
                 Text(
                     text = session.tripName
                 )

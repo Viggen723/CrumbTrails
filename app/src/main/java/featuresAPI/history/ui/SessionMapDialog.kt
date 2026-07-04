@@ -1,5 +1,6 @@
 package com.example.routetracker.featuresAPI.history.ui
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,10 +28,14 @@ import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Polyline
 import data.local.track.TrackedRoute
+import featuresAPI.shared.ui.MapPhotoPin
+import featuresAPI.shared.ui.PhotoThumbnailMarkers
+import featuresAPI.shared.ui.fallbackRoutePosition
 
 @Composable
 fun SessionMapDialog(
     session: TrackedRoute,
+    photoUris: List<Uri> = emptyList(),
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -62,6 +67,9 @@ fun SessionMapDialog(
                         width = 15f
                     )
                 }
+
+                val photoPins = photoUris.toHistoryPhotoPins(session.trackedRoute)
+                PhotoThumbnailMarkers(pins = photoPins)
             }
 
             IconButton(
@@ -72,6 +80,17 @@ fun SessionMapDialog(
             ) {
                 Icon(Icons.Filled.Close, contentDescription = "Close")
             }
+        }
+    }
+}
+
+private fun List<Uri>.toHistoryPhotoPins(routePoints: List<com.google.android.gms.maps.model.LatLng>): List<MapPhotoPin> {
+    return mapIndexedNotNull { index, uri ->
+        fallbackRoutePosition(routePoints, index, size)?.let { position ->
+            MapPhotoPin(
+                imageSource = uri,
+                position = position
+            )
         }
     }
 }

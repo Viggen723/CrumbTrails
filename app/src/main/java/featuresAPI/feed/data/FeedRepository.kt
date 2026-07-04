@@ -1,6 +1,8 @@
 package featuresAPI.feed.data
 
+import android.content.ContentResolver
 import android.net.Uri
+import androidx.exifinterface.media.ExifInterface
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -24,12 +26,20 @@ data class SharedRoutePost(
     val routeString: String = "",
     val createdAt: Long = 0L,
     val pointCount: Int = 0,
-    val photoUrls: List<String> = emptyList()
+    val photoUrls: List<String> = emptyList(),
+    val photos: List<SharedRoutePhoto> = emptyList()
+)
+
+data class SharedRoutePhoto(
+    val url: String = "",
+    val latitude: Double? = null,
+    val longitude: Double? = null
 )
 
 class FeedRepository(
     private val database: FirebaseDatabase = FirebaseDatabase.getInstance(),
-    private val storage: FirebaseStorage = FirebaseStorage.getInstance()
+    private val storage: FirebaseStorage = FirebaseStorage.getInstance(),
+    private val contentResolver: ContentResolver? = null
 ) {
 
     suspend fun uploadSharedRoute(
@@ -41,12 +51,15 @@ class FeedRepository(
         return try {
             val postReference = database.getReference("sharedRoutes").push()
             val postId = postReference.key
-                ?: return Result.failure(IllegalStateException("Could not create shared route id"))
-            val photoUrls = uploadSharedRoutePhotos(
+            if (postId == null) {
+                return Result.failure(IllegalStateException("Could not create shared route id"))
+            }
+            val photos = uploadSharedRoutePhotos(
                 userId = userId,
                 postId = postId,
                 photoUris = photoUris
             )
+            val photoUrls = photos.map { it.url }
             val routeString = PolyUtil.encode(route.trackedRoute)
             val payload = mapOf(
                 "postId" to postId,
@@ -57,7 +70,8 @@ class FeedRepository(
                 "routeString" to routeString,
                 "createdAt" to System.currentTimeMillis(),
                 "pointCount" to route.trackedRoute.size,
-                "photoUrls" to photoUrls
+                "photoUrls" to photoUrls,
+                "photos" to photos.map { it.toFirebaseMap() }
             )
 
             suspendCancellableCoroutine { continuation ->
@@ -82,7 +96,7 @@ class FeedRepository(
         userId: String?,
         postId: String,
         photoUris: List<Uri>
-    ): List<String> {
+    ): List<SharedRoutePhoto> {
         if (photoUris.isEmpty()) {
             // no photos selected, so this post just gets an empty photoUrls list
             return emptyList()
@@ -92,11 +106,37 @@ class FeedRepository(
 
         // upload photos first so the post can save real download URLs
         return photoUris.mapIndexed { index, uri ->
-            val photoReference = storage.reference
-                .child("sharedRoutes/$storageUserId/$postId/photos/$index.jpg")
-            photoReference.putFile(uri).awaitTask()
-            photoReference.downloadUrl.awaitTask().toString()
+            try {
+                val photoReference = storage.reference
+                    .child("sharedRoutes/$storageUserId/$postId/photos/$index.jpg")
+                val photoLocation = readPhotoLocation(uri)
+                photoReference.putFile(uri).awaitTask()
+                val downloadUrl = photoReference.downloadUrl.awaitTask().toString()
+                SharedRoutePhoto(
+                    url = downloadUrl,
+                    latitude = photoLocation?.first,
+                    longitude = photoLocation?.second
+                )
+            } catch (exception: Exception) {
+                throw exception
+            }
         }
+    }
+
+    private fun readPhotoLocation(uri: Uri): Pair<Double, Double>? {
+        return runCatching {
+            val resolver = contentResolver ?: return null
+            resolver.openInputStream(uri)?.use { inputStream ->
+                // EXIF GPS is optional, so missing location is fine
+                val latLong = FloatArray(2)
+                val hasLocation = ExifInterface(inputStream).getLatLong(latLong)
+                if (hasLocation) {
+                    latLong[0].toDouble() to latLong[1].toDouble()
+                } else {
+                    null
+                }
+            }
+        }.getOrNull()
     }
 
     fun getSharedRoutesForUser(userId: String?): Flow<List<SharedRoutePost>> = callbackFlow {
@@ -130,11 +170,17 @@ class FeedRepository(
 
     private fun DataSnapshot.toSharedRoutePost(): SharedRoutePost? {
         val postId = child("postId").getValue(String::class.java) ?: key ?: return null
-        val photoUrls = child("photoUrls").children.mapNotNull {
+        val existingPhotoUrls = child("photoUrls").children.mapNotNull {
             it.getValue(String::class.java)
         }
+        val photos = child("photos").children.mapNotNull { it.toSharedRoutePhoto() }
+        val finalPhotos = photos.ifEmpty {
+            existingPhotoUrls.map { url -> SharedRoutePhoto(url = url) }
+        }
+        val finalPhotoUrls = existingPhotoUrls.ifEmpty {
+            finalPhotos.map { it.url }
+        }
 
-        // photos are just URLs here, Storage upload happens before this step later
         return SharedRoutePost(
             postId = postId,
             userId = child("userId").getValue(String::class.java).orEmpty(),
@@ -144,11 +190,31 @@ class FeedRepository(
             routeString = child("routeString").getValue(String::class.java).orEmpty(),
             createdAt = (child("createdAt").value as? Number)?.toLong() ?: 0L,
             pointCount = (child("pointCount").value as? Number)?.toInt() ?: 0,
-            photoUrls = photoUrls
+            photoUrls = finalPhotoUrls,
+            photos = finalPhotos
+        )
+    }
+
+    private fun DataSnapshot.toSharedRoutePhoto(): SharedRoutePhoto? {
+        val url = child("url").getValue(String::class.java).orEmpty()
+        if (url.isBlank()) return null
+
+        return SharedRoutePhoto(
+            url = url,
+            latitude = (child("latitude").value as? Number)?.toDouble(),
+            longitude = (child("longitude").value as? Number)?.toDouble()
         )
     }
 
     // TODO: Add delete post functionality later.
+}
+
+private fun SharedRoutePhoto.toFirebaseMap(): Map<String, Any?> {
+    return mapOf(
+        "url" to url,
+        "latitude" to latitude,
+        "longitude" to longitude
+    )
 }
 
 private suspend fun <T> com.google.android.gms.tasks.Task<T>.awaitTask(): T {

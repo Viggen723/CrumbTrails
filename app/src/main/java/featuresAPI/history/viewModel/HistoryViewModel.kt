@@ -29,7 +29,7 @@ class HistoryViewModel(application: Application) : AndroidViewModel(application)
 
     private val database = RouteTrackerDatabase.getDatabase(application)
     private val trackedRouteRepository = TrackedRouteRepository(database.trackedRouteDao())
-    private val feedRepository = FeedRepository()
+    private val feedRepository = FeedRepository(contentResolver = application.contentResolver)
 
     val sessions: StateFlow<List<TrackedRoute>> = trackedRouteRepository.allRoutes
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())

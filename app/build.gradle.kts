@@ -77,7 +77,9 @@ dependencies {
 
     implementation("androidx.navigation:navigation-compose:2.9.8")
 
+    implementation("androidx.exifinterface:exifinterface:1.4.1")
     implementation("androidx.photopicker:photopicker-compose:1.0.0-alpha01")
+    implementation("io.coil-kt:coil-compose:2.7.0")
     implementation("com.google.code.gson:gson:2.10.1")
 
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))

@@ -167,7 +167,11 @@ fun HistoryUI(
     }
 
     selectedSession?.let { session ->
-        SessionMapDialog(session = session, onDismiss = { selectedSession = null })
+        SessionMapDialog(
+            session = session,
+            photoUris = sessionPhotosMap[session.id].orEmpty(),
+            onDismiss = { selectedSession = null }
+        )
     }
 
     if (activePhotoSessionId != null && isEmbeddedPhotoPickerSupported()) {
