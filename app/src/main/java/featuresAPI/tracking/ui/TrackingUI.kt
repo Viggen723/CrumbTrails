@@ -7,15 +7,19 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -54,7 +58,11 @@ fun TrackingUI(
         )
     }
 
-    // The tracking service is required to show a persistent notification
+    // Fields that will be for managing the dialog to input route name
+    var showTripNameDialog by remember { mutableStateOf(false) }
+    var inputTripName by remember { mutableStateOf("") }
+
+    // The tracking service is required to show a persistent notification NOT WORKING
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { results ->
@@ -75,6 +83,50 @@ fun TrackingUI(
         } else {
             viewModel.loadUserLocation()
         }
+    }
+
+    if (showTripNameDialog)
+    {
+        AlertDialog(
+            onDismissRequest = {
+               showTripNameDialog = false
+               inputTripName = ""
+            },
+            title = { Text("Input the route name: ")},
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = inputTripName,
+                        onValueChange = { inputTripName = it },
+                        placeholder = { Text("Example: Motorcycle ride through the mountains") },
+                        modifier = Modifier,
+                        singleLine = true
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val finalName =
+                            if (inputTripName == "")
+                            {
+                                "Untitled trip"
+                            }
+                            else
+                            {
+                                inputTripName.trim()
+                            }
+
+                        viewModel.stopTracking(tripName = finalName)
+
+                        showTripNameDialog = false
+                        inputTripName = ""
+                    }
+                ){
+                    Text("Save Route")
+                }
+            }
+        )
     }
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -113,7 +165,8 @@ fun TrackingUI(
             onClick = {
                 if (viewModel.isTracking)
                 {
-                    viewModel.stopTracking()
+                    // When pressing the button, it will trigger the dialog
+                    showTripNameDialog = true
                 }
                 else
                 {

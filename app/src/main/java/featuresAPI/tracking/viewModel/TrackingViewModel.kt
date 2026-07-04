@@ -91,12 +91,14 @@ class TrackingViewModel(application: Application) : AndroidViewModel(application
         ContextCompat.startForegroundService(getApplication(), intent)
     }
 
-    fun stopTracking() {
+    fun stopTracking(tripName: String) {
         if (!isTracking) return
         isTracking = false
 
         val intent = Intent(getApplication(), TrackingService::class.java).apply {
             action = TrackingService.ACTION_STOP
+
+            putExtra(TrackingService.EXTRA_TRIP_NAME, tripName)
         }
         getApplication<Application>().startService(intent)
 

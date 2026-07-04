@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DynamicFeed
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -20,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -28,6 +30,10 @@ import androidx.navigation.compose.rememberNavController
 import com.example.routetracker.navigation.RouteTrackerDestination
 import com.example.routetracker.navigation.RouteTrackerNavGraph
 import com.example.routetracker.ui.theme.RouteTrackerTheme
+import com.google.firebase.auth.FirebaseAuth
+import featuresAPI.authentication.data.AuthenticationRepository
+import featuresAPI.authentication.viewModel.AuthenticationViewModel
+import featuresAPI.authentication.viewModel.AuthenticationViewModelFactory
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,12 +52,30 @@ fun Application() {
 
     val navController = rememberNavController()
 
+    val firebaseAuth = FirebaseAuth.getInstance()
+    val authRepository = AuthenticationRepository(firebaseAuth)
+
+    val authViewModel: AuthenticationViewModel = viewModel(
+        factory = AuthenticationViewModelFactory(authRepository)
+    )
+
     Scaffold(
-        bottomBar = { BottomBar(navController = navController) }
+
+        bottomBar = {
+            val navBackStackEntry by navController.currentBackStackEntryAsState()
+            val currentRoute = navBackStackEntry?.destination?.route
+
+            // Only show the bottom bar if the user is not on the login screen
+            if (currentRoute != RouteTrackerDestination.LOGIN.name) {
+                BottomBar(navController = navController)
+            }
+        }
     ) { paddingValues ->
         RouteTrackerNavGraph(
             navController = navController,
-            modifier = Modifier.fillMaxSize().padding(paddingValues)
+            modifier = Modifier.fillMaxSize().padding(paddingValues),
+            authRepository = authRepository,
+            authViewModel = authViewModel
         )
     }
 }
@@ -75,6 +99,12 @@ fun BottomBar(navController: NavHostController) {
 
     NavigationBar {
         NavigationBarItem(
+            icon = { Icon(imageVector = Icons.Filled.DynamicFeed, contentDescription = "Feed") },
+            label = { Text("Feed") },
+            selected = currentRoute?.hierarchy?.any {it.route == RouteTrackerDestination.FEED.name } == true,
+            onClick = { navigateToTab((RouteTrackerDestination.FEED.name)) }
+        )
+        NavigationBarItem(
             icon = { Icon(imageVector = Icons.Filled.Map, contentDescription = "Track") },
             label = { Text("Track") },
             selected = currentRoute?.hierarchy?.any { it.route == RouteTrackerDestination.TRACK.name } == true,
@@ -87,10 +117,10 @@ fun BottomBar(navController: NavHostController) {
             onClick = { navigateToTab(RouteTrackerDestination.HISTORY.name) }
         )
         NavigationBarItem(
-            icon = { Icon(imageVector = Icons.Filled.DynamicFeed, contentDescription = "Feed") },
-            label = { Text("Feed") },
-            selected = false,
-            onClick = { }
+            icon = { Icon(imageVector = Icons.Filled.Settings, contentDescription = "Application settings") },
+            label = { Text("Settings") },
+            selected = currentRoute?.hierarchy?.any { it.route == RouteTrackerDestination.SETTINGS.name } == true,
+            onClick = { navigateToTab(RouteTrackerDestination.SETTINGS.name) }
         )
     }
 }

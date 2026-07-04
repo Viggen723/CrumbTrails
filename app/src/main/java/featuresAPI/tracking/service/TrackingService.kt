@@ -69,7 +69,10 @@ class TrackingService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_START -> startTracking()
-            ACTION_STOP -> stopTracking()
+            ACTION_STOP -> {
+                val tripName = intent.getStringExtra(EXTRA_TRIP_NAME) ?: "Untitled trip"
+                stopTracking(tripName)
+            }
         }
         return START_STICKY
     }
@@ -94,7 +97,7 @@ class TrackingService : Service() {
         }
     }
 
-    private fun stopTracking() {
+    private fun stopTracking(tripName: String) {
         trackingJob?.cancel()
         trackingJob = null
 
@@ -107,7 +110,8 @@ class TrackingService : Service() {
                 trackedRouteRepository.save(
                     startedAtEpochMillis = startedAt,
                     endedAtEpochMillis = endedAt,
-                    path = path
+                    path = path,
+                    tripName = tripName
                 )
             }
         }
@@ -150,5 +154,8 @@ class TrackingService : Service() {
         const val ACTION_STOP = "com.example.routetracker.action.STOP_TRACKING"
         private const val NOTIFICATION_ID = 1
         private const val CHANNEL_ID = "tracking_channel"
+
+        // Intent key to get the string for the name of trip
+        const val EXTRA_TRIP_NAME = "com.example.routetracker.extra.TRIP_NAME"
     }
 }

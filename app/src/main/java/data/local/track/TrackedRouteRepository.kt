@@ -9,7 +9,6 @@ import kotlinx.coroutines.withContext
 import java.util.UUID
 
 // TODO Make the tracked route its own data class outside of this
-/** A completed session, decoded back into the shape the UI actually wants. */
 data class TrackedRoute(
     val id: String,
     val tripName: String,
@@ -26,7 +25,8 @@ class TrackedRouteRepository(private val dao: TrackedRouteDao) {
     suspend fun save(
         startedAtEpochMillis: Long,
         endedAtEpochMillis: Long,
-        path: List<LatLng>
+        path: List<LatLng>,
+        tripName: String
     ) {
         withContext(Dispatchers.IO) {
             dao.insert(
@@ -34,7 +34,8 @@ class TrackedRouteRepository(private val dao: TrackedRouteDao) {
                     id = UUID.randomUUID().toString(),
                     startedAtEpochMillis = startedAtEpochMillis,
                     endedAtEpochMillis = endedAtEpochMillis,
-                    routeString = PolyUtil.encode(path)
+                    routeString = PolyUtil.encode(path),
+                    tripName = tripName
                 )
             )
         }
@@ -51,6 +52,13 @@ class TrackedRouteRepository(private val dao: TrackedRouteDao) {
         tripName = tripName,
         startedAtEpochMillis = startedAtEpochMillis,
         endedAtEpochMillis = endedAtEpochMillis,
-        trackedRoute = if (routeString.isEmpty()) emptyList() else PolyUtil.decode(routeString)
+        trackedRoute = if (routeString.isEmpty())
+        {
+            emptyList()
+        }
+        else
+        {
+            PolyUtil.decode(routeString)
+        }
     )
 }

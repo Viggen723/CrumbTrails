@@ -49,10 +49,20 @@ fun HistoryUI(
 
     if (sessions.isEmpty()) {
         Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(
-                "No tracked routes yet... Start tracking to save one!",
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Column(
+                modifier = modifier,
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                Text(
+                    text = "No tracked history...",
+                    style = MaterialTheme.typography.titleMedium
+                    )
+                Text(
+                    text = "Start tracking to save one!",
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
         }
         return
     }
@@ -62,7 +72,7 @@ fun HistoryUI(
         AlertDialog(
             onDismissRequest = { sessionPendingDeletion = null },
             title = { Text(text = "Delete Trip") },
-            text = { Text(text = "Are you sure you want to permanently delete \"${session.tripName}\"? This action cannot be undone.") },
+            text = { Text(text = "Are you sure you want to permanently delete ${session.tripName}? This action cannot be undone.") },
             confirmButton = {
                 TextButton(
                     onClick = {
