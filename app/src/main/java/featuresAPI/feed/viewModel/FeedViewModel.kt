@@ -22,12 +22,12 @@ sealed interface FeedActionStatus {
 class FeedViewModel : ViewModel() {
 
     private val repository = FeedRepository()
-    private val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+    val currentUserId: String? = FirebaseAuth.getInstance().currentUser?.uid
 
     private val _actionStatus = MutableStateFlow<FeedActionStatus>(FeedActionStatus.Idle)
     val actionStatus: StateFlow<FeedActionStatus> = _actionStatus.asStateFlow()
 
-    val posts: StateFlow<List<SharedRoutePost>> = repository.getSharedRoutesForUser(currentUserId)
+    val posts: StateFlow<List<SharedRoutePost>> = repository.getSharedRoutes()
         .catch { emit(emptyList()) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 

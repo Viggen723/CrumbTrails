@@ -143,6 +143,7 @@ fun FeedUI(
             items(posts, key = { it.postId }) { post ->
                 FeedCards(
                     post = post,
+                    showPostOptions = post.userId == viewModel.currentUserId,
                     onRoutePreviewClick = { selectedPost = post },
                     onEditCaption = {
                         postPendingCaptionEdit = post
@@ -181,6 +182,7 @@ fun FeedUI(
 @Composable
 fun FeedCards(
     post: SharedRoutePost,
+    showPostOptions: Boolean = true,
     onRoutePreviewClick: () -> Unit = {},
     onEditCaption: () -> Unit = {},
     onDeletePost: () -> Unit = {},
@@ -221,32 +223,34 @@ fun FeedCards(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
-                    Box {
-                        IconButton(onClick = { menuExpanded = true }) {
-                            Icon(
-                                imageVector = Icons.Filled.MoreVert,
-                                contentDescription = "Post options"
-                            )
-                        }
+                    if (showPostOptions) {
+                        Box {
+                            IconButton(onClick = { menuExpanded = true }) {
+                                Icon(
+                                    imageVector = Icons.Filled.MoreVert,
+                                    contentDescription = "Post options"
+                                )
+                            }
 
-                        DropdownMenu(
-                            expanded = menuExpanded,
-                            onDismissRequest = { menuExpanded = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("Edit caption") },
-                                onClick = {
-                                    menuExpanded = false
-                                    onEditCaption()
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Delete post") },
-                                onClick = {
-                                    menuExpanded = false
-                                    onDeletePost()
-                                }
-                            )
+                            DropdownMenu(
+                                expanded = menuExpanded,
+                                onDismissRequest = { menuExpanded = false }
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text("Edit caption") },
+                                    onClick = {
+                                        menuExpanded = false
+                                        onEditCaption()
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("Delete post") },
+                                    onClick = {
+                                        menuExpanded = false
+                                        onDeletePost()
+                                    }
+                                )
+                            }
                         }
                     }
                 }

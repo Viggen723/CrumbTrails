@@ -233,6 +233,27 @@ class FeedRepository(
         awaitClose { query.removeEventListener(listener) }
     }
 
+    fun getSharedRoutes(): Flow<List<SharedRoutePost>> = callbackFlow {
+        val query = database.getReference("sharedRoutes")
+            .orderByChild("createdAt")
+            .limitToLast(50)
+
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val posts = snapshot.children.mapNotNull { it.toSharedRoutePost() }
+                    .sortedByDescending { it.createdAt }
+                trySend(posts)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                close(error.toException())
+            }
+        }
+
+        query.addValueEventListener(listener)
+        awaitClose { query.removeEventListener(listener) }
+    }
+
     private fun DataSnapshot.toSharedRoutePost(): SharedRoutePost? {
         val postId = child("postId").getValue(String::class.java) ?: key ?: return null
         val existingPhotoUrls = child("photoUrls").children.mapNotNull {
