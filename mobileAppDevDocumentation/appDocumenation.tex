@@ -1,0 +1,222 @@
+\documentclass{article}
+\usepackage{listings}
+
+\usepackage{xcolor}
+\usepackage{siunitx}
+
+\usepackage{graphicx} %Package to import graphics
+\usepackage{fancyhdr}
+\usepackage[margin=1in, headheight=30pt]{geometry}
+
+\usepackage[utf8]{inputenc}
+\usepackage{booktabs} % For professional table lines
+
+\usepackage{wasysym} % For emojis
+
+\usepackage{url}
+
+\usepackage{minted}
+
+
+\definecolor{lightgray}{rgb}{0.95, 0.95, 0.95}
+
+\setminted[kotlin]{
+    bgcolor=lightgray,
+    linenos=true,   % Optional: adds line numbers
+    frame=lines     % Optional: adds a neat top/bottom border
+}
+
+
+\pagestyle{fancy}
+\fancyhf{}
+
+% L for Left: logo
+\fancyhead[L]{\includegraphics[height=40pt]{images/tujlogo.png}}
+
+\fancyhead[R]{CIS 3515 Introduction to Mobile Application Development}
+
+\fancyfoot[C]{\thepage}
+
+\renewcommand{\footrulewidth}{0.4pt}
+\renewcommand{\headrulewidth}{0.3pt}
+
+\begin{document}
+
+    \vspace*{1cm}
+    \begin{center}
+        {\huge \textbf{CrumbTrails - A Route Tracking Application}} \\
+        \vspace{1.5cm}
+        {\large Group Members:} \\
+        \vspace{0.25cm}
+        {\large  Adam James Roy, Ayra Baig, Ibrahim Sajid} \\
+        \vspace{1.5cm}
+        {\small July 10, 2026}
+    \end{center}
+
+    \vspace{1cm}
+    \begin{abstract}
+        CrumbTrails is an Android application that aims to solve one problem for runners, drivers, motorcyclists,
+        and many more: tracking your aimless routes. Whether it is a joyride in a car or trying to find a more 
+        interesting running route, CrumbTrails will remember the trail that you have traveled, allowing users to
+        look back on their route and place photos along that path automatically. Once having saved a route, these
+        are also able to be shared amongst other users in the CrumbTrail community, finding more beautiful scenery,
+        tasty pizza joints... Only your imagination is the limit!
+    \end{abstract}
+
+
+    \newpage
+
+    \tableofcontents
+
+    \newpage
+
+    \section{Project Overview}
+
+        \subsection{Main Features and Functionality}
+
+        \subsection{Motivation for Creation}
+
+    \newpage
+
+    \section{Technical Architecture}
+
+        \subsection{Frontend}
+
+        \subsection{Backend}
+
+            \subsection*{\hfil Important Data Classes \hfil}
+
+            When saving each route to the local Room database,
+            the data class below, \textbf{TrackedRoute}, was created:
+
+            \begin{center}
+                \begin{minted}{kotlin}
+                            data class TrackedRoute(
+                                val id: String,
+                                val tripName: String,
+                                val startedAtEpochMillis: Long,
+                                val endedAtEpochMillis: Long,
+                                val trackedRoute: List<LatLng>
+                            )
+                \end{minted}
+            \end{center}
+
+            The tracked data class has a couple unique traits in the form of its parameters. First, 
+            when the time stamp for beginning the trip and ending is measured by \textbf{Epoch time}.
+            This is the time elapsed in milliseconds from January 1st, 1970. These two long values 
+            will be used to determine the time of the trip, and how long the trip lasted for. Secondly, 
+            the trackedRoute parameter is a list of tuples representing the gathered points latitude and
+            longitude values (decimal form). Entering this into the database then requires encoding
+            of the trackedRoute LatLng list, into a string using Google Maps PolyUtil API. *See Backend 
+            Implementation
+
+
+    \newpage
+
+    \section{API Design}
+
+        \subsection{Backend Implementaion} The following are functions that are substantial to
+        for understanding the design choices taken for this project.
+
+            \subsection*{Function: \texttt{InitializeDB()}}
+
+                A Function Description \\
+                Source: database/database.go, line 11
+                
+                \subsection*{Parameters}
+
+                \begin{tabular}{p{3cm} p{3cm} p{7cm}}
+                \toprule
+                \textbf{Name} & \textbf{Type} & \textbf{Description} \\ \midrule
+                \texttt{No parameters} 
+                \end{tabular}
+
+                \paragraph{Returns} *sql.DB - A pointer to a SQL database object wired up with the 
+                Render database url and the proper table entries for the menu
+
+            \newpage
+
+        \subsection{Frontend Implementation} Similar to the previous Backend Implementation section,
+        the frontend 
+
+            \subsection*{Function: \texttt{InsertEntry(item, code, cost, imagePath)}}
+
+                A Function Description \\
+                Source: crudAPI/crudMenu/create.go, line 15
+
+                \subsection*{Parameters}
+
+                \begin{tabular}{p{3cm} p{3cm} p{7cm}}
+                \toprule
+                \textbf{Name} & \textbf{Type} & \textbf{Description} \\ \midrule
+                \texttt{item} & string & Menu item name \\ \addlinespace
+                \texttt{code} & string & Unique item code \\ \addlinespace
+                \texttt{cost} & cost & Cost of item in Kyat \\ \addlinespace
+                \texttt{imagePath} & string & String for the path to image in Render \\ \bottomrule
+                \end{tabular}
+
+                \paragraph{Returns}
+
+            \newpage
+
+            \section{Requirements and Installation Instructions}
+                
+                \subsection{System Requirements}
+
+                \subsection{Installation Instructions}
+
+            \newpage
+                    
+                    
+
+            \section{Testing}
+
+                \subsection{Summary}
+
+                The following is our testing method for ensuring a complete, safe
+                application environment:
+
+                \begin{enumerate}
+                    \item 
+                \end{enumerate}
+
+                \newpage
+                
+                \subsection{Known Limitations}
+
+            \newpage
+
+            \section{Attributions and Citations}
+
+                \subsection{Cited Works}
+
+                    As the project virtually entirely used Google API platforms,
+                    when the Android Developers Documentation lacked depth, Gemini was
+                    resorted to to answer lingering questions. When possible, learning 
+                    from the documentation was most crucial to learning the ins and outs
+                    of Android Studio, Kotlin, and Jetpack Compose. The following were used 
+                    in this development process:
+
+                    \begin{enumerate}
+                        \item \textbf{States With Jetpack Compose}: \url{https://developer.android.com/develop/ui/compose/state?hl=ja}
+                        \item \textbf{Dialog Composables}: \url{https://developer.android.com/develop/ui/compose/components/dialog?hl=ja}
+                        \item \textbf{Type Converters for Room}: \url{https://developer.android.com/training/data-storage/room/referencing-data?hl=ja}
+                        \item \textbf{General Room Explanation (DAO, Entities, Repositories)}: \url{https://developer.android.com/training/data-storage/room/defining-data?hl=ja}
+                        \item \textbf{Firebase - Application Connection}: \url{https://firebase.google.com/docs/auth/android/start?hl=ja}
+                        \item \textbf{Embedded Photo Picker}: \url{https://developer.android.com/training/data-storage/shared/photo-picker/embedded?hl=ja}
+                        \item \textbf{NavController and NavHost Setup}: \url{https://developer.android.com/codelabs/basic-android-kotlin-compose-navigation?hl=ja}
+                        \item \textbf{StateFlow and LiveData}: \url{https://developer.android.com/kotlin/flow/stateflow-and-sharedflow?hl=ja}
+                        \item \textbf{Switching to Foreground Service}: \url{https://developer.android.com/develop/background-work/services/fgs/restrictions-bg-start}
+                    \end{enumerate}
+
+                \subsection{Contributions}
+
+                    \paragraph{\textbf{Adam}} Created the local Room database structure, their accompanying files, 
+                    and focused on creating the layout of the API. Implemented the Composables necessary to get the general
+                    functionality including for tracking, history, feed, and authentication. 
+
+                    \paragraph{\textbf{Ayra}}
+
+                    \paragraph{\textbf{Ibrahim}} \smiley
+
+    \end{document}
