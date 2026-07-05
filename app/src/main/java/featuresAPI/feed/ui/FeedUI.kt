@@ -414,7 +414,7 @@ private fun FeedRoutePreview(
                     color = colorResource(id = R.color.route_path),
                     width = 10f
                 )
-            } else {
+            } else if (photoPins.isEmpty()) {
                 Marker(state = MarkerState(position = routePoints.first()))
             }
 
