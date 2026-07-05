@@ -15,12 +15,18 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -47,6 +53,7 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Polyline
 import featuresAPI.feed.data.SharedRoutePhoto
 import featuresAPI.feed.data.SharedRoutePost
+import featuresAPI.feed.viewModel.FeedActionStatus
 import featuresAPI.feed.viewModel.FeedViewModel
 import featuresAPI.shared.ui.MapPhotoPin
 import featuresAPI.shared.ui.PhotoThumbnailMarkers
@@ -60,7 +67,64 @@ fun FeedUI(
     viewModel: FeedViewModel = viewModel()
 ) {
     val posts by viewModel.posts.collectAsState()
+    val actionStatus by viewModel.actionStatus.collectAsState()
     var selectedPost by remember { mutableStateOf<SharedRoutePost?>(null) }
+    var postPendingCaptionEdit by remember { mutableStateOf<SharedRoutePost?>(null) }
+    var editedCaption by remember { mutableStateOf("") }
+    var postPendingDelete by remember { mutableStateOf<SharedRoutePost?>(null) }
+
+    postPendingCaptionEdit?.let { post ->
+        AlertDialog(
+            onDismissRequest = { postPendingCaptionEdit = null },
+            title = { Text("Edit caption") },
+            text = {
+                OutlinedTextField(
+                    value = editedCaption,
+                    onValueChange = { editedCaption = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Caption") }
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.editCaption(post, editedCaption)
+                        postPendingCaptionEdit = null
+                    }
+                ) {
+                    Text("Save")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { postPendingCaptionEdit = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    postPendingDelete?.let { post ->
+        AlertDialog(
+            onDismissRequest = { postPendingDelete = null },
+            title = { Text("Delete this post?") },
+            text = { Text("This removes the shared route from your Feed.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deletePost(post)
+                        postPendingDelete = null
+                    }
+                ) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { postPendingDelete = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 
     if (posts.isEmpty()) {
         Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -79,10 +143,24 @@ fun FeedUI(
             items(posts, key = { it.postId }) { post ->
                 FeedCards(
                     post = post,
-                    onRoutePreviewClick = { selectedPost = post }
+                    onRoutePreviewClick = { selectedPost = post },
+                    onEditCaption = {
+                        postPendingCaptionEdit = post
+                        editedCaption = post.caption
+                    },
+                    onDeletePost = { postPendingDelete = post }
                 )
             }
         }
+    }
+
+    if (actionStatus is FeedActionStatus.Error) {
+        Text(
+            text = (actionStatus as FeedActionStatus.Error).message,
+            modifier = Modifier.padding(16.dp),
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodySmall
+        )
     }
 
     selectedPost?.let { post ->
@@ -104,8 +182,11 @@ fun FeedUI(
 fun FeedCards(
     post: SharedRoutePost,
     onRoutePreviewClick: () -> Unit = {},
+    onEditCaption: () -> Unit = {},
+    onDeletePost: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
+    var menuExpanded by remember { mutableStateOf(false) }
 
     Card(
         modifier = modifier
@@ -125,22 +206,63 @@ fun FeedCards(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = post.tripName,
-                    style = MaterialTheme.typography.titleMedium
-                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = post.authorLabel(),
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                }
 
-                Text(
-                    text = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
-                        .format(Date(post.createdAt)),
-                    style = MaterialTheme.typography.titleSmall
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
+                            .format(Date(post.createdAt)),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Box {
+                        IconButton(onClick = { menuExpanded = true }) {
+                            Icon(
+                                imageVector = Icons.Filled.MoreVert,
+                                contentDescription = "Post options"
+                            )
+                        }
+
+                        DropdownMenu(
+                            expanded = menuExpanded,
+                            onDismissRequest = { menuExpanded = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Edit caption") },
+                                onClick = {
+                                    menuExpanded = false
+                                    onEditCaption()
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Delete post") },
+                                onClick = {
+                                    menuExpanded = false
+                                    onDeletePost()
+                                }
+                            )
+                        }
+                    }
+                }
             }
 
             Text(
                 modifier = Modifier.padding(start = 14.dp, end = 14.dp),
                 text = post.caption.ifBlank { "No caption" },
                 style = MaterialTheme.typography.bodyMedium
+            )
+
+            Text(
+                modifier = Modifier.padding(start = 14.dp, end = 14.dp),
+                text = "Route: ${post.tripName}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             Text(
@@ -159,8 +281,6 @@ fun FeedCards(
                     .fillMaxWidth()
                     .padding(start = 14.dp, end = 14.dp, bottom = 14.dp)
             )
-
-            // TODO: Show uploaded photos from photoUrls.
         }
     }
 }
@@ -303,6 +423,14 @@ private fun SharedRoutePost.toMapPhotoPins(routePoints: List<LatLng>): List<MapP
         photos = photos,
         photoUrls = photoUrls
     )
+}
+
+private fun SharedRoutePost.authorLabel(): String {
+    return when {
+        authorUsername.isNotBlank() -> "@$authorUsername"
+        authorName.isNotBlank() -> "Posted by $authorName"
+        else -> "Posted by Unknown user"
+    }
 }
 
 private fun buildFeedPhotoPins(

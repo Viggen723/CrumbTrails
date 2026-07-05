@@ -3,6 +3,7 @@ package featuresAPI.feed.data
 import android.content.ContentResolver
 import android.net.Uri
 import androidx.exifinterface.media.ExifInterface
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -20,6 +21,8 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 data class SharedRoutePost(
     val postId: String = "",
     val userId: String = "",
+    val authorName: String = "",
+    val authorUsername: String = "",
     val routeId: String = "",
     val tripName: String = "",
     val caption: String = "",
@@ -39,6 +42,7 @@ data class SharedRoutePhoto(
 class FeedRepository(
     private val database: FirebaseDatabase = FirebaseDatabase.getInstance(),
     private val storage: FirebaseStorage = FirebaseStorage.getInstance(),
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
     private val contentResolver: ContentResolver? = null
 ) {
 
@@ -60,10 +64,13 @@ class FeedRepository(
                 photoUris = photoUris
             )
             val photoUrls = photos.map { it.url }
+            val author = loadAuthorProfile(userId)
             val routeString = PolyUtil.encode(route.trackedRoute)
             val payload = mapOf(
                 "postId" to postId,
                 "userId" to userId.orEmpty(),
+                "authorName" to author.first,
+                "authorUsername" to author.second,
                 "routeId" to route.id,
                 "tripName" to route.tripName,
                 "caption" to caption.trim(),
@@ -92,6 +99,49 @@ class FeedRepository(
         }
     }
 
+    suspend fun updatePostCaption(
+        postId: String,
+        newCaption: String,
+        currentUserId: String?
+    ): Result<Unit> {
+        if (postId.isBlank() || currentUserId.isNullOrBlank()) {
+            return Result.failure(IllegalStateException("Missing post or user"))
+        }
+
+        return try {
+            val postReference = database.getReference("sharedRoutes").child(postId)
+            val snapshot = postReference.get().awaitTask()
+            val ownerId = snapshot.child("userId").getValue(String::class.java).orEmpty()
+            if (ownerId != currentUserId) {
+                return Result.failure(SecurityException("Post does not belong to current user"))
+            }
+            postReference.child("caption").setValue(newCaption.trim()).awaitTask()
+            Result.success(Unit)
+        } catch (exception: Exception) {
+            Result.failure(exception)
+        }
+    }
+
+    suspend fun deletePost(
+        post: SharedRoutePost,
+        currentUserId: String?
+    ): Result<Unit> {
+        if (post.postId.isBlank() || currentUserId.isNullOrBlank()) {
+            return Result.failure(IllegalStateException("Missing post or user"))
+        }
+        if (post.userId != currentUserId) {
+            return Result.failure(SecurityException("Post does not belong to current user"))
+        }
+
+        return try {
+            database.getReference("sharedRoutes").child(post.postId).removeValue().awaitTask()
+            deletePostPhotosBestEffort(post)
+            Result.success(Unit)
+        } catch (exception: Exception) {
+            Result.failure(exception)
+        }
+    }
+
     private suspend fun uploadSharedRoutePhotos(
         userId: String?,
         postId: String,
@@ -106,20 +156,16 @@ class FeedRepository(
 
         // upload photos first so the post can save real download URLs
         return photoUris.mapIndexed { index, uri ->
-            try {
-                val photoReference = storage.reference
-                    .child("sharedRoutes/$storageUserId/$postId/photos/$index.jpg")
-                val photoLocation = readPhotoLocation(uri)
-                photoReference.putFile(uri).awaitTask()
-                val downloadUrl = photoReference.downloadUrl.awaitTask().toString()
-                SharedRoutePhoto(
-                    url = downloadUrl,
-                    latitude = photoLocation?.first,
-                    longitude = photoLocation?.second
-                )
-            } catch (exception: Exception) {
-                throw exception
-            }
+            val photoReference = storage.reference
+                .child("sharedRoutes/$storageUserId/$postId/photos/$index.jpg")
+            val photoLocation = readPhotoLocation(uri)
+            photoReference.putFile(uri).awaitTask()
+            val downloadUrl = photoReference.downloadUrl.awaitTask().toString()
+            SharedRoutePhoto(
+                url = downloadUrl,
+                latitude = photoLocation?.first,
+                longitude = photoLocation?.second
+            )
         }
     }
 
@@ -137,6 +183,40 @@ class FeedRepository(
                 }
             }
         }.getOrNull()
+    }
+
+    private suspend fun loadAuthorProfile(userId: String?): Pair<String, String> {
+        if (userId.isNullOrBlank()) {
+            return "You" to ""
+        }
+
+        val snapshot = runCatching {
+            database.getReference("users").child(userId).get().awaitTask()
+        }.getOrNull()
+
+        val username = snapshot?.child("username")?.getValue(String::class.java).orEmpty()
+        val displayName = snapshot?.child("displayName")?.getValue(String::class.java).orEmpty()
+        val authUser = auth.currentUser
+        val fallbackName = authUser?.displayName
+            ?.takeIf { it.isNotBlank() }
+            ?: authUser?.email
+                ?.substringBefore("@")
+                ?.takeIf { it.isNotBlank() }
+            ?: "You"
+
+        return displayName.ifBlank { username.ifBlank { fallbackName } } to username
+    }
+
+    private suspend fun deletePostPhotosBestEffort(post: SharedRoutePost) {
+        val count = maxOf(post.photos.size, post.photoUrls.size)
+        repeat(count) { index ->
+            runCatching {
+                storage.reference
+                    .child("sharedRoutes/${post.userId}/${post.postId}/photos/$index.jpg")
+                    .delete()
+                    .awaitTask()
+            }
+        }
     }
 
     fun getSharedRoutesForUser(userId: String?): Flow<List<SharedRoutePost>> = callbackFlow {
@@ -184,6 +264,8 @@ class FeedRepository(
         return SharedRoutePost(
             postId = postId,
             userId = child("userId").getValue(String::class.java).orEmpty(),
+            authorName = child("authorName").getValue(String::class.java).orEmpty(),
+            authorUsername = child("authorUsername").getValue(String::class.java).orEmpty(),
             routeId = child("routeId").getValue(String::class.java).orEmpty(),
             tripName = child("tripName").getValue(String::class.java).orEmpty(),
             caption = child("caption").getValue(String::class.java).orEmpty(),
@@ -205,8 +287,6 @@ class FeedRepository(
             longitude = (child("longitude").value as? Number)?.toDouble()
         )
     }
-
-    // TODO: Add delete post functionality later.
 }
 
 private fun SharedRoutePhoto.toFirebaseMap(): Map<String, Any?> {

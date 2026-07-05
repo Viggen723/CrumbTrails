@@ -55,7 +55,15 @@ fun RouteTrackerNavGraph(
             FeedUI(modifier = Modifier.fillMaxSize())
         }
         composable(route = RouteTrackerDestination.SETTINGS.name) {
-            SettingsUI(modifier = Modifier.fillMaxSize(), authenticationViewModel = authViewModel)
+            SettingsUI(
+                modifier = Modifier.fillMaxSize(),
+                authenticationViewModel = authViewModel,
+                onLoggedOut = {
+                    navController.navigate(RouteTrackerDestination.LOGIN.name) {
+                        popUpTo(navController.graph.id) { inclusive = true }
+                    }
+                }
+            )
         }
     }
 }
