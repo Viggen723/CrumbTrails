@@ -7,5 +7,6 @@ data class TrackedRoute(
     val tripName: String,
     val startedAtEpochMillis: Long,
     val endedAtEpochMillis: Long,
-    val trackedRoute: List<LatLng>
+    val trackedRoute: List<LatLng>,
+    val photoPaths: List<String> = emptyList()
 )

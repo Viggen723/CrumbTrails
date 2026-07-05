@@ -22,7 +22,7 @@ import androidx.photopicker.compose.ExperimentalPhotoPickerComposeApi
 import androidx.photopicker.compose.rememberEmbeddedPhotoPickerState
 
 /**
- * Validates if the device can render the modern inline embedded photo picker.
+ * Validates if the device can use the modern embedded photo picker.
  */
 @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.UPSIDE_DOWN_CAKE, extension = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 fun isEmbeddedPhotoPickerSupported(): Boolean {

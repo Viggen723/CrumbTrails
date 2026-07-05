@@ -9,6 +9,8 @@ import com.example.routetracker.data.local.track.TrackedRouteRepository
 import com.google.firebase.auth.FirebaseAuth
 import data.local.track.TrackedRoute
 import featuresAPI.feed.data.FeedRepository
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -37,13 +39,41 @@ class HistoryViewModel(application: Application) : AndroidViewModel(application)
     private val _shareStatus = MutableStateFlow<ShareStatus>(ShareStatus.Idle)
     val shareStatus: StateFlow<ShareStatus> = _shareStatus.asStateFlow()
 
+    private var shareStatusResetJob: Job? = null
+
     fun delete(id: String) {
         viewModelScope.launch {
             trackedRouteRepository.delete(id)
         }
     }
 
+    // Downsizes each picked photo via Coil, saves the result to app-private
+    // storage, then persists the saved paths onto the existing route in Room.
+    fun attachPhotos(routeId: String, uris: List<Uri>) {
+        if (uris.isEmpty()) return
+        viewModelScope.launch {
+            val context = getApplication<Application>()
+            val savedPaths = uris.mapNotNull { uri ->
+                com.example.routetracker.utils.PhotoDownsizer.downsizeAndSave(
+                    context = context,
+                    sourceUri = uri,
+                    routeId = routeId
+                )
+            }
+            trackedRouteRepository.addPhotoPaths(routeId, savedPaths)
+        }
+    }
+
+    // Removes a single photo (by its saved local file path) from a route
+    fun removePhoto(routeId: String, photoPath: String) {
+        viewModelScope.launch {
+            trackedRouteRepository.removePhotoPath(routeId, photoPath)
+        }
+    }
+
     fun shareRouteToFeed(route: TrackedRoute, caption: String, photoUris: List<Uri>) {
+        shareStatusResetJob?.cancel() // a new share is priority over any pending auto clear
+
         viewModelScope.launch {
             _shareStatus.value = ShareStatus.Loading
             val result = feedRepository.uploadSharedRoute(
@@ -56,6 +86,12 @@ class HistoryViewModel(application: Application) : AndroidViewModel(application)
                 ShareStatus.Success
             } else {
                 ShareStatus.Error(result.exceptionOrNull().toSafeShareMessage())
+            }
+
+            // hide the status message 3 seconds after it appears
+            shareStatusResetJob = viewModelScope.launch {
+                delay(3000)
+                _shareStatus.value = ShareStatus.Idle
             }
         }
     }

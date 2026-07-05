@@ -25,4 +25,7 @@ interface TrackedRouteDao {
 
     @Query("DELETE FROM tracked_routes")
     suspend fun deleteAllRoutes()
+
+    @Query("UPDATE tracked_routes SET photoPaths = :photoPaths WHERE id = :id")
+    suspend fun updatePhotoPaths(id: String, photoPaths: List<String>)
 }

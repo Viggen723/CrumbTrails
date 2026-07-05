@@ -28,6 +28,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.routetracker.featuresAPI.history.viewModel.HistoryViewModel
 import com.example.routetracker.featuresAPI.history.viewModel.ShareStatus
 import data.local.track.TrackedRoute
+import java.io.File
 
 @Composable
 fun HistoryUI(
@@ -36,7 +37,7 @@ fun HistoryUI(
 ) {
     val sessions by viewModel.sessions.collectAsState()
     val shareStatus by viewModel.shareStatus.collectAsState()
-    var selectedSession by remember { mutableStateOf<TrackedRoute?>(null) }
+    var selectedSessionId by remember { mutableStateOf<String?>(null) }
 
     // keep the selected session around while the delete dialog is open
     var sessionPendingDeletion by remember { mutableStateOf<TrackedRoute?>(null) }
@@ -52,11 +53,11 @@ fun HistoryUI(
                 modifier = modifier,
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+            ) {
                 Text(
                     text = "No tracked history...",
                     style = MaterialTheme.typography.titleMedium
-                    )
+                )
                 Text(
                     text = "Start tracking to save one!",
                     style = MaterialTheme.typography.titleMedium
@@ -146,12 +147,12 @@ fun HistoryUI(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(sessions, key = { it.id }) { session ->
-                val attachedPhotoCount = sessionPhotosMap[session.id]?.size ?: 0
+                val attachedPhotoCount = session.photoPaths.size
 
                 SessionCard(
                     session = session,
                     photoCount = attachedPhotoCount,
-                    onClick = { selectedSession = session },
+                    onClick = { selectedSessionId = session.id },
                     onDelete = { sessionPendingDeletion = session },
                     onShare = {
                         sessionPendingShare = session
@@ -160,17 +161,25 @@ fun HistoryUI(
                     onTriggerEmbeddedPhoto = { activePhotoSessionId = session.id },
                     onLegacyPhotoSelection = { uris ->
                         sessionPhotosMap[session.id] = (sessionPhotosMap[session.id] ?: emptyList()) + uris
+                        viewModel.attachPhotos(session.id, uris)
                     }
                 )
             }
         }
     }
 
+    val selectedSession = sessions.find { it.id == selectedSessionId }
     selectedSession?.let { session ->
+        val persistedUris = remember(session.photoPaths) {
+            session.photoPaths.map { path -> Uri.fromFile(File(path)) }
+        }
         SessionMapDialog(
             session = session,
-            photoUris = sessionPhotosMap[session.id].orEmpty(),
-            onDismiss = { selectedSession = null }
+            photoUris = persistedUris,
+            onDismiss = { selectedSessionId = null },
+            onDeletePhoto = { uri ->
+                uri.path?.let { path -> viewModel.removePhoto(session.id, path) }
+            }
         )
     }
 
@@ -179,6 +188,7 @@ fun HistoryUI(
             onUriGranted = { uris ->
                 activePhotoSessionId?.let { id ->
                     sessionPhotosMap[id] = (sessionPhotosMap[id] ?: emptyList()) + uris
+                    (id as? String)?.let { routeId -> viewModel.attachPhotos(routeId, uris) }
                 }
             },
             onUriRevoked = { uris ->

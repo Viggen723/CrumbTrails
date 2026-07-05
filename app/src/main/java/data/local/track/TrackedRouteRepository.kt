@@ -7,6 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.util.UUID
 
 class TrackedRouteRepository(private val dao: TrackedRouteDao) {
@@ -39,6 +40,24 @@ class TrackedRouteRepository(private val dao: TrackedRouteDao) {
         }
     }
 
+    suspend fun addPhotoPaths(id: String, newPaths: List<String>) {
+        if (newPaths.isEmpty()) return
+        withContext(Dispatchers.IO) {
+            val existingPaths = dao.getById(id)?.photoPaths.orEmpty()
+            dao.updatePhotoPaths(id, existingPaths + newPaths)
+        }
+    }
+
+    // Removes a single photo path from this route's persisted list, and best-effort
+    // deletes the downsized copy from disk so removed photos don't stay in storage.
+    suspend fun removePhotoPath(id: String, pathToRemove: String) {
+        withContext(Dispatchers.IO) {
+            val existingPaths = dao.getById(id)?.photoPaths.orEmpty()
+            dao.updatePhotoPaths(id, existingPaths - pathToRemove)
+            runCatching { File(pathToRemove).delete() } // https://proandroiddev.com/kotlin-tips-and-tricks-you-may-not-know-7-goodbye-try-catch-hello-trycatching-7135cb382609
+        }
+    }
+
     private fun TrackedRouteEntity.toDomain() = TrackedRoute(
         id = id,
         tripName = tripName,
@@ -51,6 +70,7 @@ class TrackedRouteRepository(private val dao: TrackedRouteDao) {
         else
         {
             PolyUtil.decode(routeString)
-        }
+        },
+        photoPaths = photoPaths
     )
 }
