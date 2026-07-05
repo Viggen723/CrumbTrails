@@ -61,6 +61,12 @@ import featuresAPI.shared.ui.fallbackRoutePosition
 import java.text.DateFormat
 import java.util.Date
 
+private enum class FeedFilter(val label: String) {
+    AllPosts("All posts"),
+    MyPosts("My posts"),
+    OtherUsers("Other users")
+}
+
 @Composable
 fun FeedUI(
     modifier: Modifier = Modifier,
@@ -68,10 +74,21 @@ fun FeedUI(
 ) {
     val posts by viewModel.posts.collectAsState()
     val actionStatus by viewModel.actionStatus.collectAsState()
+    val currentUserId = viewModel.currentUserId
     var selectedPost by remember { mutableStateOf<SharedRoutePost?>(null) }
     var postPendingCaptionEdit by remember { mutableStateOf<SharedRoutePost?>(null) }
     var editedCaption by remember { mutableStateOf("") }
     var postPendingDelete by remember { mutableStateOf<SharedRoutePost?>(null) }
+    var selectedFilter by remember { mutableStateOf(FeedFilter.AllPosts) }
+    val filteredPosts = remember(posts, selectedFilter, currentUserId) {
+        posts.filter { post ->
+            when (selectedFilter) {
+                FeedFilter.AllPosts -> true
+                FeedFilter.MyPosts -> post.userId == currentUserId
+                FeedFilter.OtherUsers -> post.userId != currentUserId
+            }
+        }
+    }
 
     postPendingCaptionEdit?.let { post ->
         AlertDialog(
@@ -134,23 +151,47 @@ fun FeedUI(
             )
         }
     } else {
-        LazyColumn(
+        Column(
             modifier = modifier
                 .fillMaxSize()
                 .padding(horizontal = 16.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(posts, key = { it.postId }) { post ->
-                FeedCards(
-                    post = post,
-                    showPostOptions = post.userId == viewModel.currentUserId,
-                    onRoutePreviewClick = { selectedPost = post },
-                    onEditCaption = {
-                        postPendingCaptionEdit = post
-                        editedCaption = post.caption
-                    },
-                    onDeletePost = { postPendingDelete = post }
-                )
+            FeedFilterDropdown(
+                selectedFilter = selectedFilter,
+                onFilterSelected = { selectedFilter = it }
+            )
+
+            if (filteredPosts.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No posts found for this filter.",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(filteredPosts, key = { it.postId }) { post ->
+                        FeedCards(
+                            post = post,
+                            showPostOptions = post.userId == currentUserId,
+                            onRoutePreviewClick = { selectedPost = post },
+                            onEditCaption = {
+                                postPendingCaptionEdit = post
+                                editedCaption = post.caption
+                            },
+                            onDeletePost = { postPendingDelete = post }
+                        )
+                    }
+                }
             }
         }
     }
@@ -175,6 +216,36 @@ fun FeedUI(
             )
         } else {
             selectedPost = null
+        }
+    }
+}
+
+@Composable
+private fun FeedFilterDropdown(
+    selectedFilter: FeedFilter,
+    onFilterSelected: (FeedFilter) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box(modifier = modifier) {
+        TextButton(onClick = { expanded = true }) {
+            Text("Filter: ${selectedFilter.label}")
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            FeedFilter.entries.forEach { filter ->
+                DropdownMenuItem(
+                    text = { Text(filter.label) },
+                    onClick = {
+                        expanded = false
+                        onFilterSelected(filter)
+                    }
+                )
+            }
         }
     }
 }
