@@ -1,6 +1,6 @@
 # CrumbTrails — System Requirements
 
-CrumbTrails is a native Android (Kotlin + Jetpack Compose) app for tracking routes (car, motorcycle, or on foot) and sharing routes as well as photos with other users. Below are the requirements to build, run, and develop the project, derived directly from its Gradle configuration.
+CrumbTrails is a native Android (Kotlin + Jetpack Compose) app for tracking routes (car, motorcycle, or on foot) and sharing routes as well as photos with other users. Below are the requirements to build, run, and develop the project.
 
 ## 1. Development Environment
 
