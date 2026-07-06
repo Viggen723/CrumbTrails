@@ -48,9 +48,9 @@ import com.google.maps.android.PolyUtil
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Polyline
+import com.google.maps.android.compose.rememberMarkerState
 import featuresAPI.feed.data.SharedRoutePhoto
 import featuresAPI.feed.data.SharedRoutePost
 import featuresAPI.feed.viewModel.FeedActionStatus
@@ -372,6 +372,7 @@ private fun FeedRoutePreview(
 
     if (routePoints.isEmpty()) return
 
+    val singlePointRouteMarkerState = rememberMarkerState(position = routePoints.first())
     val cameraPositionState = remember(routeString) {
         val centerPoint = routePoints[routePoints.size / 2]
         CameraPositionState(
@@ -415,7 +416,7 @@ private fun FeedRoutePreview(
                     width = 10f
                 )
             } else if (photoPins.isEmpty()) {
-                Marker(state = MarkerState(position = routePoints.first()))
+                Marker(state = singlePointRouteMarkerState)
             }
 
             PhotoThumbnailMarkers(pins = photoPins)
@@ -446,6 +447,7 @@ private fun FeedRouteMapDialog(
                 .clip(RoundedCornerShape(20.dp))
                 .background(MaterialTheme.colorScheme.surface)
         ) {
+            val singlePointRouteMarkerState = rememberMarkerState(position = routePoints.first())
             val cameraPositionState = remember(postId, routePoints) {
                 val centerPoint = routePoints[routePoints.size / 2]
                 CameraPositionState(
@@ -463,14 +465,11 @@ private fun FeedRouteMapDialog(
                         color = colorResource(id = R.color.route_path),
                         width = 15f
                     )
-                } else {
-                    Marker(state = MarkerState(position = routePoints.first()))
+                } else if (photoPins.isEmpty()) {
+                    Marker(state = singlePointRouteMarkerState)
                 }
 
-                // full map uses simple pins for now because async thumbnail markers can crash in Dialog
-                photoPins.forEach { pin ->
-                    Marker(state = MarkerState(position = pin.position))
-                }
+                PhotoThumbnailMarkers(pins = photoPins)
             }
 
             IconButton(
