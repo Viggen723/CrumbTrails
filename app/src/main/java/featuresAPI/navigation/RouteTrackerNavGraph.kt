@@ -37,7 +37,7 @@ fun RouteTrackerNavGraph(
             LoginScreen(
                 viewModel = authViewModel,
                 onLoginSuccessRoute = {
-                    // Navigate to tracking and then clear the Login from the staack
+                    // Navigate to tracking and then clear the Login from the stack
                     navController.navigate(RouteTrackerDestination.TRACK.name) {
                         popUpTo(RouteTrackerDestination.LOGIN.name) { inclusive = true }
                     }

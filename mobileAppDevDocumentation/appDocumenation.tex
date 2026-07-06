@@ -17,6 +17,10 @@
 
 \usepackage{minted}
 
+\usepackage[edges]{forest}
+
+\usepackage{tcolorbox}
+
 
 \definecolor{lightgray}{rgb}{0.95, 0.95, 0.95}
 
@@ -80,9 +84,36 @@
 
     \section{Technical Architecture}
 
+        This Android application, built in Android Studio, utilizes a one activity architecture,
+        local database where applicable, as well as cloud database base to focus on giving the user
+        a lightning fast UI experience. Choices for external and internal APIs reflect these
+        design decisions also allowing for scalability and maintainability in mind. These choices
+        consist of Room, a local database option which offers an abstraction layer on top of SQlite3.
+        Google's Firebase that has the role of managing authentication, as well as creating the 
+        environment for users to build a route-sharing community. The internal API was designed 
+        around a MVVM (model-view-view model) architecture to maintain a highly readable, scalable 
+        structure.
+
         \subsection{Frontend}
 
+        Each feature that has been implemented that is directed interfaced with by the user
+        is found in the \textbf{featuresAPI} directory. Each directory name corresponds with
+        the name of the feature/function and consists of their MVVM components. This gives 
+        flexibilty to decouple the Jetpack Compose functions from the logic, as well as 
+        functions that will directly interface with the Room database. In the case of complex
+        views such as the \textbf{history/ui}, this may be further decoupled to create
+        smaller UI componenets.
+
         \subsection{Backend}
+
+        Managing data locally was executed by creating a Room database, which mentioned above,
+        uses SQLite3 as its functional base. Made of three distinct parts, Room is utilized to
+        perform typical CRUD operation on the table containing the user's tracked routes,
+        the time that the route was taken as well as directory paths of photos that were added
+        post-trip. This project has one table for the routes, therefore, three main componenets;
+        the \textbf{TrackedRouteEntity}, \textbf{TrackedRouteDao}, and \textbf{TrackedRouteRepository}. 
+        These are then connected via the \textbf{RouteTrackerDatabase}, which is then instantiated 
+        in the history tab. 
 
             \subsection*{\hfil Important Data Classes \hfil}
 
@@ -91,13 +122,13 @@
 
             \begin{center}
                 \begin{minted}{kotlin}
-                            data class TrackedRoute(
-                                val id: String,
-                                val tripName: String,
-                                val startedAtEpochMillis: Long,
-                                val endedAtEpochMillis: Long,
-                                val trackedRoute: List<LatLng>
-                            )
+data class TrackedRoute(
+    val id: String,
+    val tripName: String,
+    val startedAtEpochMillis: Long,
+    val endedAtEpochMillis: Long,
+    val trackedRoute: List<LatLng>
+)
                 \end{minted}
             \end{center}
 
@@ -114,6 +145,76 @@
     \newpage
 
     \section{API Design}
+
+
+
+        \noindent
+        % 1. The Tree Box (Adjust width as needed)
+        \begin{minipage}[t]{0.55\textwidth}
+            \begin{forest}
+                for tree={%
+                    folder,
+                    grow'=0,
+                    fit=band,
+                }
+                [java
+                    [com.example.routetracker
+                        [ui.theme
+                            [Color.kt]
+                            [Theme.kt]
+                            [Type.kt]
+                        ]
+                        [utils
+                            [Converters]
+                            [PhotoDownsizer]
+                        ]
+                        [MainActivity.kt]
+                    ]
+                    [data
+                        [local
+                            [track
+                                [TrackedRoute]
+                                [TrackedRouteDao]
+                                [TrackedRouteEntity]
+                                [TrackedRouteRepository]
+                            ]
+                            [RouteTrackerDatabase]
+                        ]
+                        [location
+                            [MapRepository]
+                        ]
+                    ]
+                    [featuresAPI
+                        [authentication]
+                        [feed]
+                        [history]
+                        [navigation]
+                        [settings]
+                        [shared]
+                        [tracking]
+                    ]
+                ]
+                [res
+                    [Drawables contained here]
+                ]
+            \end{forest}
+        \end{minipage}
+        \hfill 
+        \begin{minipage}[t]{0.50\textwidth}
+            \begin{tcolorbox}[title=Architecture Notes, colback=white, colframe=purple]
+                \textbf{Directory Overview:} \\
+                This package structure separates core app logic from the modular feature APIs.
+                
+                \vspace{0.5em}
+                \textbf{Key Components:}
+                \begin{itemize}
+                    \item \texttt{data/}: Handles local Room databases and repository logic.
+                    \item \texttt{featuresAPI/}: Contains isolated feature modules to support scalability. Each directory follows MVVM format.
+                \end{itemize}
+                \textbf{NOTE}: Other files not included here have been modified such as gradle build files. See 
+                Section 4 Requirements and Installation Instructions for more details.
+            \end{tcolorbox}
+        \end{minipage}
 
         \subsection{Backend Implementaion} The following are functions that are substantial to
         for understanding the design choices taken for this project.
@@ -163,7 +264,149 @@
                 
                 \subsection{System Requirements}
 
+                    Below are the requirements to build, run, and develop the project.
+
+                    \subsubsection*{Development Environment}
+
+                        \begin{center}
+                            \begin{tabular}{p{5cm} p{7cm}}
+                                \toprule
+                                \textbf{Requirement} & \textbf{Version / Detail} \\ \midrule
+                                    OS & Windows, macOS, or Linux (Android Studio compatible OS) \\ \addlinespace
+                                    IDE & Android Studio (recent version, compatible with AGP 9.1.1 / Gradle 9.3.1) \\ \addlinespace
+                                    JDK & \textbf{JDK 21} \\ \addlinespace
+                                    Android Gradle Plugin (AGP) & 9.1.1 \\ \addlinespace
+                                    Kotlin & 2.2.10 \\ \addlinespace
+                                    KSP & 2.2.10-2.0.2 \\ \bottomrule
+                            \end{tabular}
+                        \end{center}
+
+                    \subsubsection*{Android SDK / Device Requirements}
+
+                    \begin{center}
+                        \begin{tabular}{p{5cm} p{7cm}}
+                            \toprule
+                            \textbf{Setting} & \textbf{Value} \\ \midrule
+                            \texttt{compileSdk} & 37 \\ \addlinespace
+                            \texttt{targetSdk} & 36 \\ \addlinespace
+                            \texttt{minSdk} & 34 (Android 14+) \\ \addlinespace
+                                Java source/target compatibility & Java 11 \\ \addlinespace
+                                Compose & Enabled (\texttt{buildFeatures.compose = true}) \\ \addlinespace
+                                BuildConfig & Enabled \\ \bottomrule
+                        \end{tabular}
+                    \end{center}
+
+                    Since \texttt{minSdk = 34}, the app only installs/runs on devices running \textbf{Android 14 (API 34) or newer}.
+
+                    \subsubsection*{Required Gradle/Android Plugins}
+
+                        \begin{itemize}
+                            \item \texttt{com.android.application} --- 9.1.1
+                            \item \texttt{org.jetbrains.kotlin.plugin.compose} --- 2.2.10
+                            \item \texttt{com.google.devtools.ksp} --- 2.2.10-2.0.2 (annotation processing for Room)
+                            \item \texttt{com.google.android.libraries.mapsplatform.secrets-gradle-plugin} --- 2.0.1 (used for taking the Google Maps API key from \texttt{local.properties})
+                            \item \texttt{com.google.gms.google-services} --- 4.4.2 (Firebase configuration)
+                        \end{itemize}
+
+                    \subsubsection*{External Services / Necessary Accounts}
+
+                    Two files are deliberately excluded from the repo (\texttt{.gitignore}) and \textbf{must be supplied locally} before the project will build/run:
+
+                    \begin{enumerate}
+                        \item \textbf{\texttt{local.properties}} (project root) --- must define a Google Maps API key, e.g.:
+                        \begin{center}
+                            \begin{minted}{text}
+            GOOGLE_MAPS_API_KEY=your_key_here
+                            \end{minted}
+                        \end{center}
+                        Consumed by the secrets-gradle-plugin and injected into the manifest placeholder \texttt{\$\{GOOGLE\_MAPS\_API\_KEY\}}.
+                        \item \textbf{\texttt{app/google-services.json}} --- Firebase project configuration file, downloaded from the Firebase console. Required for Firebase Auth, Realtime Database, and Storage to function.
+                    \end{enumerate}
+
+                    You will therefore need:
+                    \begin{itemize}
+                        \item A \textbf{Google Cloud / Maps Platform} project with the Maps SDK for Android enabled (billing-enabled API key).
+                        \item A \textbf{Firebase} project with Authentication, Realtime Database, and Storage enabled.
+                    \end{itemize}
+
+                    \subsubsection*{App Permissions (Pre-declared in AndroidManifest.xml)}
+
+                        \begin{itemize}
+                            \item \texttt{ACCESS\_FINE\_LOCATION}
+                            \item \texttt{ACCESS\_COARSE\_LOCATION}
+                            \item \texttt{INTERNET}
+                            \item \texttt{FOREGROUND\_SERVICE}
+                            \item \texttt{FOREGROUND\_SERVICE\_LOCATION}
+                            \item \texttt{POST\_NOTIFICATIONS}
+                        \end{itemize}
+
+                    (Used for GPS route tracking via a foreground \texttt{TrackingService}, and notifying the user while tracking is active.)
+
+                    \subsubsection*{Library Dependencies}
+
+                     \paragraph{AndroidX / Jetpack}
+
+                        \begin{center}
+                            \begin{tabular}{p{7cm} p{4cm}}
+                            \toprule
+                            \textbf{Library} & \textbf{Version} \\ \midrule
+                                androidx.core:core-ktx & 1.19.0 \\ \addlinespace
+                                androidx.lifecycle:lifecycle-runtime-ktx & 2.11.0 \\ \addlinespace
+                                androidx.lifecycle:lifecycle-viewmodel-compose & 2.8.2 \\ \addlinespace
+                                androidx.activity:activity-compose & 1.13.0 \\ \addlinespace
+                                androidx.compose:compose-bom (BOM) & 2024.09.00 \\ \addlinespace
+                                androidx.compose.ui:ui & via BOM \\ \addlinespace
+                                androidx.compose.ui:ui-graphics & via BOM \\ \addlinespace
+                                androidx.compose.ui:ui-tooling / ui-tooling-preview & via BOM \\ \addlinespace
+                                androidx.compose.material3:material3 & via BOM \\ \addlinespace
+                                androidx.compose.material:material-icons-extended & via BOM \\ \addlinespace
+                                androidx.navigation:navigation-compose & 2.9.8 \\ \addlinespace
+                                androidx.room:room-runtime, room-ktx, room-compiler (KSP) & 2.8.4 \\ \addlinespace
+                                androidx.exifinterface:exifinterface & 1.4.1 \\ \addlinespace
+                                androidx.photopicker:photopicker-compose & 1.0.0-alpha01 \\ \bottomrule
+                            \end{tabular}
+                        \end{center}
+
+                        \paragraph{Google / Firebase / Maps}
+
+                        \begin{center}
+                            \begin{tabular}{p{7cm} p{4cm}}
+                            \toprule
+                            \textbf{Library} & \textbf{Version} \\ \midrule
+                                com.google.android.gms:play-services-location & 21.3.0 \\ \addlinespace
+                                com.google.android.gms:play-services-maps & 19.0.0 \\ \addlinespace
+                                com.google.maps.android:maps-compose & 6.0.0 \\ \addlinespace
+                                com.google.maps.android:android-maps-utils & 3.20.1 \\ \addlinespace
+                                com.google.firebase:firebase-bom (BOM) & 33.1.2 \\ \addlinespace
+                                com.google.firebase:firebase-auth-ktx & via BOM \\ \addlinespace
+                                com.google.firebase:firebase-storage & via BOM \\ \addlinespace
+                                com.google.firebase:firebase-database & via BOM \\ \addlinespace
+                                firebase-database-ktx (catalog entry) & 22.0.1 \\ \bottomrule
+                            \end{tabular}
+                        \end{center}
+
+                        paragraph{Utilities}
+
+                        \begin{center}
+                            \begin{tabular}{p{7cm} p{4cm}}
+                            \toprule
+                            \textbf{Library} & \textbf{Version} \\ \midrule
+                                io.coil-kt:coil-compose\ (image loading) & 2.7.0 \\ \addlinespace
+                                com.google.code.gson:gson & 2.10.1 \\ \bottomrule
+                            \end{tabular}
+                        \end{center}
+
                 \subsection{Installation Instructions}
+
+                \begin{enumerate}
+                    \item Install \textbf{JDK 21}.
+                    \item Install \textbf{Android Studio}.
+                    \item Clone the repo.
+                    \item Create a \textbf{Google Maps API key} and add it to \texttt{local.properties} as \texttt{GOOGLE\_MAPS\_API\_KEY}.
+                    \item Create a \textbf{Firebase project}, download \texttt{google-services.json}, and place it in \texttt{/app}.
+                    \item Ensure a target device/emulator runs \textbf{Android 14 (API 34) or newer}.
+                    \item Sync Gradle and build --- internet access is required for Gradle/Maven dependency downloads and for the app itself (Maps, Firebase) at runtime.
+                \end{enumerate}
 
             \newpage
                     
@@ -213,7 +456,7 @@
 
                     \paragraph{\textbf{Adam}} Created the local Room database structure, their accompanying files, 
                     and focused on creating the layout of the API. Implemented the Composables necessary to get the general
-                    functionality including for tracking, history, feed, and authentication. 
+                    functionality including for tracking, history, feed, and authentication.
 
                     \paragraph{\textbf{Ayra}}
 
