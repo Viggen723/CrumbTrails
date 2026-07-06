@@ -17,6 +17,7 @@ import com.example.routetracker.data.local.RouteTrackerDatabase
 import com.example.routetracker.data.local.track.TrackedRouteRepository
 import com.example.routetracker.data.location.MapRepository
 import com.google.android.gms.maps.model.LatLng
+import featuresAPI.settings.data.TrackingPreferencesRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -53,6 +54,9 @@ class TrackingService : Service() {
     private val mapRepository by lazy { MapRepository(this) }
     private val trackedRouteRepository by lazy {
         TrackedRouteRepository(RouteTrackerDatabase.getDatabase(this).trackedRouteDao())
+    }
+    private val trackingPreferencesRepository by lazy {
+        TrackingPreferencesRepository(this)
     }
 
     private val _pathPoints = MutableStateFlow<List<LatLng>>(emptyList())
@@ -91,7 +95,12 @@ class TrackingService : Service() {
         sessionStartedAtEpochMillis = System.currentTimeMillis()
 
         trackingJob = serviceScope.launch {
-            mapRepository.observeLocationUpdates().collect { location ->
+            // Read once when tracking starts so mid-session changes do not mess with the route.
+            val preferences = trackingPreferencesRepository.getPreferences()
+            mapRepository.observeLocationUpdates(
+                updateIntervalMillis = preferences.updateIntervalMillis,
+                minUpdateDistanceMeters = preferences.minDistanceMeters
+            ).collect { location ->
                 _pathPoints.value = _pathPoints.value + location
             }
         }

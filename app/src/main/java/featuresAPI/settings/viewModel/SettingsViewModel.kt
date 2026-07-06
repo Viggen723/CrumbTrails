@@ -1,7 +1,10 @@
 package featuresAPI.settings.viewModel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import featuresAPI.settings.data.TrackingPreferences
+import featuresAPI.settings.data.TrackingPreferencesRepository
 import featuresAPI.settings.data.UserProfile
 import featuresAPI.settings.data.UserProfileRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,12 +19,17 @@ sealed interface SettingsStatus {
     data class Error(val message: String) : SettingsStatus
 }
 
-class SettingsViewModel(
-    private val repository: UserProfileRepository = UserProfileRepository()
-) : ViewModel() {
+class SettingsViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val repository = UserProfileRepository()
+    // Tracking settings stay local; the profile fields above are the Firebase-backed part.
+    private val trackingPreferencesRepository = TrackingPreferencesRepository(application)
 
     private val _profile = MutableStateFlow(UserProfile())
     val profile: StateFlow<UserProfile> = _profile.asStateFlow()
+
+    private val _trackingPreferences = MutableStateFlow(TrackingPreferences())
+    val trackingPreferences: StateFlow<TrackingPreferences> = _trackingPreferences.asStateFlow()
 
     private val _status = MutableStateFlow<SettingsStatus>(SettingsStatus.Idle)
     val status: StateFlow<SettingsStatus> = _status.asStateFlow()
@@ -33,6 +41,7 @@ class SettingsViewModel(
         get() = repository.currentFirebaseDisplayName
 
     init {
+        loadTrackingPreferences()
         loadProfile()
     }
 
@@ -64,6 +73,20 @@ class SettingsViewModel(
                 _status.value = SettingsStatus.Error(exception.toSafeMessage())
             }
         }
+    }
+
+    fun saveTrackingUpdateInterval(updateIntervalMillis: Long) {
+        trackingPreferencesRepository.saveUpdateIntervalMillis(updateIntervalMillis)
+        loadTrackingPreferences()
+    }
+
+    fun saveTrackingMinDistance(minDistanceMeters: Float) {
+        trackingPreferencesRepository.saveMinDistanceMeters(minDistanceMeters)
+        loadTrackingPreferences()
+    }
+
+    private fun loadTrackingPreferences() {
+        _trackingPreferences.value = trackingPreferencesRepository.getPreferences()
     }
 
     private fun Throwable.toSafeMessage(): String {

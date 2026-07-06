@@ -9,6 +9,7 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.model.LatLng
+import featuresAPI.settings.data.TrackingPreferencesRepository
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -33,13 +34,18 @@ class MapRepository(private val context: Context) {
         }
     }
 
-    // Important to tune the refresh rate here to tell how many points to do
-    // TODO I want to make this adjustable via the menu options
     @SuppressLint("MissingPermission")
-    fun observeLocationUpdates(): Flow<LatLng> = callbackFlow {
-        val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 5_000L)
-            .setMinUpdateIntervalMillis(3_000L)
-            .setMinUpdateDistanceMeters(5f)
+    fun observeLocationUpdates(
+        updateIntervalMillis: Long = TrackingPreferencesRepository.DEFAULT_UPDATE_INTERVAL_MILLIS,
+        minUpdateDistanceMeters: Float = TrackingPreferencesRepository.DEFAULT_MIN_DISTANCE_METERS
+    ): Flow<LatLng> = callbackFlow {
+        // These come from Settings now; Android still wants milliseconds and meters here.
+        val safeUpdateIntervalMillis = updateIntervalMillis.coerceAtLeast(1_000L)
+        val safeMinUpdateDistanceMeters = minUpdateDistanceMeters.coerceAtLeast(0f)
+        val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, safeUpdateIntervalMillis)
+            // Use the selected interval for both values so 30s really means "not faster than 30s".
+            .setMinUpdateIntervalMillis(safeUpdateIntervalMillis)
+            .setMinUpdateDistanceMeters(safeMinUpdateDistanceMeters)
             .build()
 
         val callback = object : LocationCallback() {
