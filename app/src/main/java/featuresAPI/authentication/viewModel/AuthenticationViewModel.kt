@@ -2,12 +2,12 @@ package featuresAPI.authentication.viewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import featuresAPI.authentication.data.AuthenticationRepository
 import featuresAPI.authentication.data.Resource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import featuresAPI.authentication.data.AuthenticationRepository
 
 class AuthenticationViewModel(private val repository: AuthenticationRepository) : ViewModel() {
 

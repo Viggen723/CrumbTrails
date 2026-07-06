@@ -3,9 +3,9 @@ package featuresAPI.settings.data
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.FirebaseDatabase
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-import kotlinx.coroutines.suspendCancellableCoroutine
 
 data class UserProfile(
     val uid: String = "",

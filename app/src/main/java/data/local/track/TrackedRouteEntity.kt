@@ -1,6 +1,5 @@
 package com.example.routetracker.data.local.track
 
-import android.R
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 

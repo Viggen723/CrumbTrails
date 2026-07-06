@@ -1,7 +1,7 @@
 package featuresAPI.feed.ui
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,8 +47,8 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.PolyUtil
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberMarkerState
 import featuresAPI.feed.data.SharedRoutePhoto

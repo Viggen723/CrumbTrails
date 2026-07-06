@@ -11,12 +11,12 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import com.google.maps.android.PolyUtil
 import data.local.track.TrackedRoute
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 data class SharedRoutePhoto(
     val url: String = "",
