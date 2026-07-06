@@ -284,6 +284,13 @@ fun FeedCards(
                         text = post.authorLabel(),
                         style = MaterialTheme.typography.titleSmall
                     )
+                    post.authorHandleLabel()?.let { handle ->
+                        Text(
+                            text = handle,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -501,9 +508,17 @@ private fun SharedRoutePost.toMapPhotoPins(routePoints: List<LatLng>): List<MapP
 
 private fun SharedRoutePost.authorLabel(): String {
     return when {
+        authorName.isNotBlank() -> authorName
         authorUsername.isNotBlank() -> "@$authorUsername"
-        authorName.isNotBlank() -> "Posted by $authorName"
-        else -> "Posted by Unknown user"
+        else -> "Unknown user"
+    }
+}
+
+private fun SharedRoutePost.authorHandleLabel(): String? {
+    return if (authorName.isNotBlank() && authorUsername.isNotBlank()) {
+        "@$authorUsername"
+    } else {
+        null
     }
 }
 
