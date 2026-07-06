@@ -104,7 +104,7 @@ You'll therefore need:
 1. Install **JDK 21**.
 2. Install **Android Studio** 
 3. Clone the repo 
-4. Create a **Google Maps API key** and add it to `local.properties` as `MAPS_API_KEY`.
+4. Create a **Google Maps API key** and add it to `local.properties` as `GOOGLE_MAPS_API_KEY`.
 5. Create a **Firebase project**, download `google-services.json`, and place it in `/app`.
 6. Ensure a target device/emulator runs **Android 14 (API 34) or newer**.
 7. Sync Gradle and build — internet access is required for Gradle/Maven dependency downloads and for the app itself (Maps, Firebase) at runtime.
