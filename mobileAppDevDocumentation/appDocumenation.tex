@@ -113,7 +113,8 @@
         post-trip. This project has one table for the routes, therefore, three main componenets;
         the \textbf{TrackedRouteEntity}, \textbf{TrackedRouteDao}, and \textbf{TrackedRouteRepository}. 
         These are then connected via the \textbf{RouteTrackerDatabase}, which is then instantiated 
-        in the history tab. 
+        in the history tab. By using the functions supplied in the DAO, or data access object, the 
+        frontend as a fully decoupled layer that can access the database through the SQlite3 queries.
 
             \subsection*{\hfil Important Data Classes \hfil}
 
@@ -149,7 +150,7 @@ data class TrackedRoute(
 
 
         \noindent
-        % 1. The Tree Box (Adjust width as needed)
+        % The Tree Box 
         \begin{minipage}[t]{0.55\textwidth}
             \begin{forest}
                 for tree={%
@@ -219,21 +220,81 @@ data class TrackedRoute(
         \subsection{Backend Implementaion} The following are functions that are substantial to
         for understanding the design choices taken for this project.
 
-            \subsection*{Function: \texttt{InitializeDB()}}
+            \subsection*{Function: \texttt{insert(route: TrackedRouteEntity)}}
 
-                A Function Description \\
-                Source: database/database.go, line 11
+                Uses the Room annotation \textbf{@Insert} to indicate that will be inserted into
+                the database.\\
+                Source: data/local/track/TrackedRouteDao, line 13
                 
                 \subsection*{Parameters}
 
-                \begin{tabular}{p{3cm} p{3cm} p{7cm}}
+                \begin{tabular}{p{3cm} p{4cm} p{7cm}}
                 \toprule
                 \textbf{Name} & \textbf{Type} & \textbf{Description} \\ \midrule
-                \texttt{No parameters} 
+                \texttt{route} & TrackedRouteEntity & An instance of the corresponding entity 
                 \end{tabular}
 
-                \paragraph{Returns} *sql.DB - A pointer to a SQL database object wired up with the 
-                Render database url and the proper table entries for the menu
+                \paragraph{Returns} \texttt{Unit} - The equivalent of void
+
+            \hrulefill
+
+            \subsection*{Function: \texttt{getAll() : Flow<List<TrackedRouteEntity>>}}
+
+                Uses the Room annotation \textbf{@Query} with the accompanying argument to retrieve the database elements
+                in descending order. \\
+                Source: data/local/track/TrackedRouteDao, line 17
+                
+                \subsection*{Parameters}
+
+                \begin{tabular}{p{3cm} p{4cm} p{7cm}}
+                \toprule
+                \textbf{Name} & \textbf{Type} & \textbf{Description} \\ \midrule
+                \texttt{No parameters}
+                \end{tabular}
+
+                \paragraph{Returns} \texttt{Flow<List<TrackedRouteEntity>>} - A flow list of the database's stored routes.
+                Note that this is different from a normal list as this remains active to adjust to any database changes.
+                Mainly used for displaying the user's past routes in the History page.
+
+            \hrulefill
+
+            \subsection*{Function: \texttt{getById(id: String): TrackedRouteEntity?}}
+
+                Retrieves the route data from a specific ID. This has been implemented mainly
+                for sending the route do the Firebase server to share to the feed page. \\
+                Source: data/local/track/TrackedRouteDao, line 21
+                
+                \subsection*{Parameters}
+
+                \begin{tabular}{p{3cm} p{4cm} p{7cm}}
+                \toprule
+                \textbf{Name} & \textbf{Type} & \textbf{Description} \\ \midrule
+                \texttt{id} & String & ID saved in the route entity
+                \end{tabular}
+
+                \paragraph{Returns} \texttt{TrackedRouteEntity?} - The route entity is returned if the 
+                id exists in the database, Unit if not.
+
+            \newpage
+
+            \subsection*{Function: \texttt{getById(id: String): TrackedRouteEntity?}}
+
+                Retrieves the route data from a specific ID. This has been implemented mainly
+                for sending the route do the Firebase server to share to the feed page. \\
+                Source: data/local/track/TrackedRouteDao, line 21
+                
+                \subsection*{Parameters}
+
+                \begin{tabular}{p{3cm} p{4cm} p{7cm}}
+                \toprule
+                \textbf{Name} & \textbf{Type} & \textbf{Description} \\ \midrule
+                \texttt{id} & String & ID saved in the route entity
+                \end{tabular}
+
+                \paragraph{Returns} \texttt{TrackedRouteEntity?} - The route entity is returned if the 
+                id exists in the database, Unit if not.
+
+            \hrulefill
 
             \newpage
 
@@ -460,6 +521,6 @@ data class TrackedRoute(
 
                     \paragraph{\textbf{Ayra}}
 
-                    \paragraph{\textbf{Ibrahim}} \smiley
+                    \paragraph{\textbf{Ibrahim}} \smiley 
 
     \end{document}

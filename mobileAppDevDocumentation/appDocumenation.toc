@@ -7,19 +7,22 @@
 \contentsline {section}{\numberline {3}API Design}{5}{}%
 \contentsline {subsection}{\numberline {3.1}Backend Implementaion}{6}{}%
 \contentsline {paragraph}{Returns}{6}{}%
-\contentsline {subsection}{\numberline {3.2}Frontend Implementation}{7}{}%
+\contentsline {paragraph}{Returns}{6}{}%
+\contentsline {paragraph}{Returns}{6}{}%
 \contentsline {paragraph}{Returns}{7}{}%
-\contentsline {section}{\numberline {4}Requirements and Installation Instructions}{8}{}%
-\contentsline {subsection}{\numberline {4.1}System Requirements}{8}{}%
-\contentsline {paragraph}{AndroidX / Jetpack}{9}{}%
-\contentsline {paragraph}{Google / Firebase / Maps}{10}{}%
-\contentsline {subsection}{\numberline {4.2}Installation Instructions}{10}{}%
-\contentsline {section}{\numberline {5}Testing}{11}{}%
-\contentsline {subsection}{\numberline {5.1}Summary}{11}{}%
-\contentsline {subsection}{\numberline {5.2}Known Limitations}{12}{}%
-\contentsline {section}{\numberline {6}Attributions and Citations}{13}{}%
-\contentsline {subsection}{\numberline {6.1}Cited Works}{13}{}%
-\contentsline {subsection}{\numberline {6.2}Contributions}{13}{}%
-\contentsline {paragraph}{\textbf {Adam}}{13}{}%
-\contentsline {paragraph}{\textbf {Ayra}}{13}{}%
-\contentsline {paragraph}{\textbf {Ibrahim}}{13}{}%
+\contentsline {subsection}{\numberline {3.2}Frontend Implementation}{8}{}%
+\contentsline {paragraph}{Returns}{8}{}%
+\contentsline {section}{\numberline {4}Requirements and Installation Instructions}{9}{}%
+\contentsline {subsection}{\numberline {4.1}System Requirements}{9}{}%
+\contentsline {paragraph}{AndroidX / Jetpack}{10}{}%
+\contentsline {paragraph}{Google / Firebase / Maps}{11}{}%
+\contentsline {subsection}{\numberline {4.2}Installation Instructions}{11}{}%
+\contentsline {section}{\numberline {5}Testing}{12}{}%
+\contentsline {subsection}{\numberline {5.1}Summary}{12}{}%
+\contentsline {subsection}{\numberline {5.2}Known Limitations}{13}{}%
+\contentsline {section}{\numberline {6}Attributions and Citations}{14}{}%
+\contentsline {subsection}{\numberline {6.1}Cited Works}{14}{}%
+\contentsline {subsection}{\numberline {6.2}Contributions}{14}{}%
+\contentsline {paragraph}{\textbf {Adam}}{14}{}%
+\contentsline {paragraph}{\textbf {Ayra}}{14}{}%
+\contentsline {paragraph}{\textbf {Ibrahim}}{14}{}%
