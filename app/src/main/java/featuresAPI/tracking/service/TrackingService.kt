@@ -95,7 +95,7 @@ class TrackingService : Service() {
         sessionStartedAtEpochMillis = System.currentTimeMillis()
 
         trackingJob = serviceScope.launch {
-            // Read once when tracking starts so mid-session changes do not mess with the route.
+            // Read once when tracking starts so midsession changes do not mess with the route.
             val preferences = trackingPreferencesRepository.getPreferences()
             mapRepository.observeLocationUpdates(
                 updateIntervalMillis = preferences.updateIntervalMillis,

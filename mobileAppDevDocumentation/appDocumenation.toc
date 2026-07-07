@@ -16,17 +16,21 @@
 \contentsline {paragraph}{Returns}{9}{}%
 \contentsline {subsection}{\numberline {3.2}Frontend Implementation}{10}{}%
 \contentsline {paragraph}{Returns}{10}{}%
-\contentsline {section}{\numberline {4}Requirements and Installation Instructions}{11}{}%
-\contentsline {subsection}{\numberline {4.1}System Requirements}{11}{}%
-\contentsline {paragraph}{AndroidX / Jetpack}{12}{}%
-\contentsline {paragraph}{Google / Firebase / Maps}{13}{}%
-\contentsline {subsection}{\numberline {4.2}Installation Instructions}{13}{}%
-\contentsline {section}{\numberline {5}Testing}{14}{}%
-\contentsline {subsection}{\numberline {5.1}Summary}{14}{}%
-\contentsline {subsection}{\numberline {5.2}Known Limitations}{15}{}%
-\contentsline {section}{\numberline {6}Attributions and Citations}{16}{}%
-\contentsline {subsection}{\numberline {6.1}Cited Works}{16}{}%
-\contentsline {subsection}{\numberline {6.2}Contributions}{16}{}%
-\contentsline {paragraph}{\textbf {Adam}}{16}{}%
-\contentsline {paragraph}{\textbf {Ayra}}{16}{}%
-\contentsline {paragraph}{\textbf {Ibrahim}}{16}{}%
+\contentsline {paragraph}{Returns}{10}{}%
+\contentsline {paragraph}{Returns}{11}{}%
+\contentsline {paragraph}{Returns}{11}{}%
+\contentsline {section}{\numberline {4}Requirements and Installation Instructions}{12}{}%
+\contentsline {subsection}{\numberline {4.1}System Requirements}{12}{}%
+\contentsline {paragraph}{AndroidX / Jetpack}{13}{}%
+\contentsline {paragraph}{Google / Firebase / Maps}{14}{}%
+\contentsline {paragraph}{Utilities}{14}{}%
+\contentsline {subsection}{\numberline {4.2}Installation Instructions}{14}{}%
+\contentsline {section}{\numberline {5}Testing}{15}{}%
+\contentsline {subsection}{\numberline {5.1}Summary}{15}{}%
+\contentsline {subsection}{\numberline {5.2}Known Limitations}{16}{}%
+\contentsline {section}{\numberline {6}Attributions and Citations}{17}{}%
+\contentsline {subsection}{\numberline {6.1}Cited Works}{17}{}%
+\contentsline {subsection}{\numberline {6.2}Contributions}{17}{}%
+\contentsline {paragraph}{\textbf {Adam}}{17}{}%
+\contentsline {paragraph}{\textbf {Ayra}}{17}{}%
+\contentsline {paragraph}{\textbf {Ibrahim}}{17}{}%

@@ -88,7 +88,7 @@
 
             Tracking the route of the user is performed via the onboard GPS of the 
             smartphone and toggled via a simple button on the main map screen. Once 
-            activited, the user can either keep the screen live, or sleep the device. 
+            activated, the user can either keep the screen live, or sleep the device. 
             If the latter is chosen, the tracking functionality is moved to a foreground
             service, providing a notification that the tracking is working in the background.
             Upon returning to the app, the user can press the toggle again to halt tracking, 
@@ -120,7 +120,7 @@
 
             This feature, as simple as it sounds, does not exist in a form that is user-friendly
             \textbf{AND} reliable. For example, Calimoto is an existing cross-platfrom application
-            that is feature-rich and clean interference. However, this comes at a cost to use their 
+            that is feature-rich and clean interface. However, this comes at a cost to use their 
             route tracking feature, hiding it behind a subscription paywall. Furthermore, Google Maps
             has a route tracking feature but is plagued with reliability issues and does not give the 
             user enough control to know how the app is tracking their route. These issues are aimed to 
@@ -151,7 +151,7 @@
         flexibilty to decouple the Jetpack Compose functions from the logic, as well as 
         functions that will directly interface with the Room database. In the case of complex
         views such as the \textbf{history/ui}, this may be further decoupled to create
-        smaller UI componenets.
+        smaller UI components.
 
         \subsection{Backend}
 
@@ -389,7 +389,7 @@ data class TrackedRoute(
 
             \subsection*{Function: \texttt{addPhotoPaths(id: String, newPaths: List<String>)}}
 
-                In a backkground thread, a variable is made to save the existing list of
+                In a background thread, a variable is made to save the existing list of
                 paths and then concatenate the new threads onto that list. \\
                 Source: data/local/track/TrackedRouteRepository, line 43
                 
@@ -408,7 +408,7 @@ data class TrackedRoute(
 
             \subsection*{Function: \texttt{removePhotoPaths(id: String, pathToRemove: List<String>)}}
 
-                In a backkground thread, a variable is made to save the existing list of
+                In a background thread, a variable is made to save the existing list of
                 paths and passes the existing path with the path to remove through the dao
                 function. runCatching is then finally used to remove the corressponding photo from
                 memory. \\
@@ -429,8 +429,8 @@ data class TrackedRoute(
 
             \newpage
 
-        \subsection{Frontend Implementation} Similar to the previous Backend Implementation section,
-        the frontend 
+        \subsection{Frontend Implementation} Similar to the previous Backend Implementation section, 
+        below contains notable functions created for this application:
 
             \subsection*{Function: \texttt{RouteTrackerNavGraph(navController: NavHostController, authRepository: AuthenticationRepsitory, 
             authViewModel: AuthenticationViewModel, modifier: Modifier = Modifier)}}
@@ -449,6 +449,69 @@ data class TrackedRoute(
                 \texttt{authRepository} & AuthenticationRepository & Needed to check if user is logged in \\ \addlinespace
                 \texttt{authViewModel} & AuthenticationViewModel & Need for logging the user out from SettingsUI \\ \addlinespace
                 \texttt{modifier} & Modifier & Defaulted as Modifier. For Jetpack Compose \\ \bottomrule
+                \end{tabular}
+
+                \paragraph{Returns} \texttt{Unit}
+
+            \hrulefill
+
+
+            \subsection*{Function: \texttt{startTracking()}}
+
+                This function has the role of both starting the starting the tracking service
+                and moving it to the background as a foreground service and building the notification
+                stating that the tracking is ongoing. Once initiated, a variable in the class 
+                \textbf{trackingJob} is then modified in a background thread, colleting the path 
+                points that form the route (LatLng). An Intent is then used in the TrackingViewModel
+                to start and to pass the data between the two. \\
+                Source: featuresAPI/tracking/service/TrackingService, line 84
+
+                \subsection*{Parameters}
+
+                \begin{tabular}{p{3cm} p{4cm} p{7cm}}
+                \toprule
+                \textbf{Name} & \textbf{Type} & \textbf{Description} \\ \midrule
+                \texttt{No Parameters} &
+                \end{tabular}
+
+                \paragraph{Returns} \texttt{Unit}
+
+            \newpage
+
+            \subsection*{Function: \texttt{stopTracking(tripName: String)}}
+
+                Activated when the user presses the toggle for tracking. When pressed,
+                an alert dialog appears, prompting the user to enter the desired name for
+                the trip, which is entered into this function as a parameter. Once called,
+                the \textbf{trackingJob} variable is set to null to signal it is finished. 
+                As long as there were points saved from the tracking procedure, a background 
+                thread is then created to save the details into the database as a 
+                TrackedRouteEntity. Once added, the foreground service is then stopped. \\
+                Source: featuresAPI/tracking/service/TrackingService, line 109
+
+                \subsection*{Parameters}
+
+                \begin{tabular}{p{3cm} p{4cm} p{7cm}}
+                \toprule
+                \textbf{Name} & \textbf{Type} & \textbf{Description} \\ \midrule
+                \texttt{tripName} & String & User entered name for the trip
+                \end{tabular}
+
+                \paragraph{Returns} \texttt{Unit}
+
+            \hrulefill
+
+             \subsection*{Function: \texttt{fun()}}
+
+                Nothing yet \\
+                Source: featuresAPI/tracking/service/TrackingService, line 109
+
+                \subsection*{Parameters}
+
+                \begin{tabular}{p{3cm} p{4cm} p{7cm}}
+                \toprule
+                \textbf{Name} & \textbf{Type} & \textbf{Description} \\ \midrule
+                \texttt{No parameters} 
                 \end{tabular}
 
                 \paragraph{Returns} \texttt{Unit}
@@ -580,7 +643,7 @@ data class TrackedRoute(
                             \end{tabular}
                         \end{center}
 
-                        paragraph{Utilities}
+                        \paragraph{Utilities}
 
                         \begin{center}
                             \begin{tabular}{p{7cm} p{4cm}}
