@@ -307,6 +307,10 @@ INPUT ./images/tujlogo.png
 INPUT ./images/tujlogo.png
 INPUT ./images/tujlogo.png
 INPUT ./images/tujlogo.png
+INPUT ./images/tujlogo.png
+INPUT ./images/tujlogo.png
+INPUT ./images/tujlogo.png
+INPUT ./images/tujlogo.png
 OUTPUT _43A53260D40FFAC44FE196D515263D2D.data.minted
 INPUT ./_43A53260D40FFAC44FE196D515263D2D.config.minted
 INPUT ./_43A53260D40FFAC44FE196D515263D2D.config.minted
@@ -331,6 +335,10 @@ INPUT ./images/tujlogo.png
 INPUT ./images/tujlogo.png
 INPUT /usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-ts1.enc
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmtt12.tfm
+INPUT ./images/tujlogo.png
+INPUT ./images/tujlogo.png
+INPUT ./images/tujlogo.png
+INPUT ./images/tujlogo.png
 INPUT ./images/tujlogo.png
 INPUT ./images/tujlogo.png
 INPUT ./images/tujlogo.png

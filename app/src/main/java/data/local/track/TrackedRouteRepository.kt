@@ -48,13 +48,13 @@ class TrackedRouteRepository(private val dao: TrackedRouteDao) {
         }
     }
 
-    // Removes a single photo path from this route's persisted list, and best-effort
+    // Removes a single photo path from this route's persisted list, and best effort
     // deletes the downsized copy from disk so removed photos don't stay in storage.
     suspend fun removePhotoPath(id: String, pathToRemove: String) {
         withContext(Dispatchers.IO) {
             val existingPaths = dao.getById(id)?.photoPaths.orEmpty()
             dao.updatePhotoPaths(id, existingPaths - pathToRemove)
-            runCatching { File(pathToRemove).delete() } // https://proandroiddev.com/kotlin-tips-and-tricks-you-may-not-know-7-goodbye-try-catch-hello-trycatching-7135cb382609
+            runCatching { File(pathToRemove).delete() }
         }
     }
 

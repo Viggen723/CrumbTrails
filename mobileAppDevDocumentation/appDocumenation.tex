@@ -78,7 +78,56 @@
 
         \subsection{Main Features and Functionality}
 
+            Crumb Trails is centered around three main features:
+
+            \begin{enumerate}
+                \item Tracking the route taken by the user
+                \item Saving the routes in a local database
+                \item Sharing and viewing routes of other users
+            \end{enumerate}
+
+            Tracking the route of the user is performed via the onboard GPS of the 
+            smartphone and toggled via a simple button on the main map screen. Once 
+            activited, the user can either keep the screen live, or sleep the device. 
+            If the latter is chosen, the tracking functionality is moved to a foreground
+            service, providing a notification that the tracking is working in the background.
+            Upon returning to the app, the user can press the toggle again to halt tracking, 
+            triggering a dialog box to enter the name of the route, completing the 
+            tracking process.
+            
+            Once the route is added, it is then saved into the local database, also configured
+            in this application. Moving to the history tab, these routes are viewable, each taking
+            the form of a card view, allowing the users to scroll through their past trips. Upon clicking
+            a card, a dialog box is shown to preview the line of the route in Google Maps. Each 
+            card also has buttons integrating functions to add photos to the route which 
+            appear on the map, as well as delete and share. Sharing then sends the route to 
+            a cloud-based database linked to the user's'account created upon startup of the 
+            application.
+
+            Sharing sends the route, along with the choosen photos to the server. This is then shown
+            in the feed section of the application. Posts from other uses are also displayed here,
+            where everyone can discover new routes that they have not known existed!
+
         \subsection{Motivation for Creation}
+
+            Motivated from personal woes, Crumb Trails was created to solve the one problem that comes
+            with any joy rides, aimless walks, or curious bicycle trips. When finishing a trip, 
+            "where was that beautiful piece of tarmac again?" or "man, I would love to make that my 
+            run route for now on... But what turn did I take to get there?" - These thoughts may 
+            come to mind wishing you wrote it on a map as when went. Crumb Trails main feature is
+            centered around solving this problem, giving users ways to share and record these routes
+            for ease of use.
+
+            This feature, as simple as it sounds, does not exist in a form that is user-friendly
+            \textbf{AND} reliable. For example, Calimoto is an existing cross-platfrom application
+            that is feature-rich and clean interference. However, this comes at a cost to use their 
+            route tracking feature, hiding it behind a subscription paywall. Furthermore, Google Maps
+            has a route tracking feature but is plagued with reliability issues and does not give the 
+            user enough control to know how the app is tracking their route. These issues are aimed to 
+            be resolved and its architecture and design to achieve this is explained below.
+
+            \textbf{NOTE}: While not free, this application is far less expensive when using your 
+            self-supplied API keys. Further development is needed for viable deploy plans.
 
     \newpage
 
@@ -115,6 +164,8 @@
         These are then connected via the \textbf{RouteTrackerDatabase}, which is then instantiated 
         in the history tab. By using the functions supplied in the DAO, or data access object, the 
         frontend as a fully decoupled layer that can access the database through the SQlite3 queries.
+
+    \newpage
 
             \subsection*{\hfil Important Data Classes \hfil}
 
@@ -249,7 +300,7 @@ data class TrackedRoute(
                 \begin{tabular}{p{3cm} p{4cm} p{7cm}}
                 \toprule
                 \textbf{Name} & \textbf{Type} & \textbf{Description} \\ \midrule
-                \texttt{No parameters}
+                \texttt{No parameters} \\ \bottomrule
                 \end{tabular}
 
                 \paragraph{Returns} \texttt{Flow<List<TrackedRouteEntity>>} - A flow list of the database's stored routes.
@@ -269,7 +320,7 @@ data class TrackedRoute(
                 \begin{tabular}{p{3cm} p{4cm} p{7cm}}
                 \toprule
                 \textbf{Name} & \textbf{Type} & \textbf{Description} \\ \midrule
-                \texttt{id} & String & ID saved in the route entity
+                \texttt{id} & String & ID saved in the route entity \\ \bottomrule
                 \end{tabular}
 
                 \paragraph{Returns} \texttt{TrackedRouteEntity?} - The route entity is returned if the 
@@ -277,22 +328,102 @@ data class TrackedRoute(
 
             \newpage
 
-            \subsection*{Function: \texttt{getById(id: String): TrackedRouteEntity?}}
+            \subsection*{Function: \texttt{delete(id: String)}}
 
-                Retrieves the route data from a specific ID. This has been implemented mainly
-                for sending the route do the Firebase server to share to the feed page. \\
-                Source: data/local/track/TrackedRouteDao, line 21
+                Removes a route entity from the database specified by its ID. \\
+                Source: data/local/track/TrackedRouteDao, line 24
                 
                 \subsection*{Parameters}
 
                 \begin{tabular}{p{3cm} p{4cm} p{7cm}}
                 \toprule
                 \textbf{Name} & \textbf{Type} & \textbf{Description} \\ \midrule
-                \texttt{id} & String & ID saved in the route entity
+                \texttt{id} & String & ID saved in the route entity \\ \bottomrule
                 \end{tabular}
 
-                \paragraph{Returns} \texttt{TrackedRouteEntity?} - The route entity is returned if the 
-                id exists in the database, Unit if not.
+                \paragraph{Returns} \texttt{Unit} 
+
+            \hrulefill
+
+            \subsection*{Function: \texttt{updatePhotoPaths(id: String, photoPaths: List<String>)}}
+
+                Updates the path of the photos that are associated with the route
+                specified. A photo path is handed over by the PhotoDownsizer object.
+                The TypeConverter is also used for Room to accept the list. \\
+                Source: data/local/track/TrackedRouteDao, line 27
+                
+                \subsection*{Parameters}
+
+                \begin{tabular}{p{3cm} p{4cm} p{7cm}}
+                \toprule
+                \textbf{Name} & \textbf{Type} & \textbf{Description} \\ \midrule
+                \texttt{id} & String & ID saved in the route entity \\ \addlinespace
+                \texttt{photoPaths} & \texttt{List<String>} & Containing the path to each photo in local storage \\ \bottomrule
+                \end{tabular}
+
+                \paragraph{Returns} \texttt{Unit} 
+
+            \hrulefill
+
+            \subsection*{Function: \texttt{save(startedAtEpochMillis: Long, endedAtEpochMillis: Long, path: List<LatLng>, tripName: String)}}
+
+                Utlizing the DAO's insert function, the parameters passed through this function
+                are then used to create a TrackedRouteEntity once a trip is completed. Executed 
+                in a background thread as it is a suspend function. \\
+                Source: data/local/track/TrackedRouteRepository, line 18
+                
+                \subsection*{Parameters}
+
+                \begin{tabular}{p{3cm} p{4cm} p{7cm}}
+                \toprule
+                \textbf{Name} & \textbf{Type} & \textbf{Description} \\ \midrule
+                \texttt{id} & String & ID saved in the route entity \\ \addlinespace
+                \texttt{photoPaths} & List<String> & Containing the path to each photo in local storage \\ \bottomrule
+                \end{tabular}
+
+                \paragraph{Returns} \texttt{Unit} 
+
+            \hrulefill
+
+            \newpage
+
+            \subsection*{Function: \texttt{addPhotoPaths(id: String, newPaths: List<String>)}}
+
+                In a backkground thread, a variable is made to save the existing list of
+                paths and then concatenate the new threads onto that list. \\
+                Source: data/local/track/TrackedRouteRepository, line 43
+                
+                \subsection*{Parameters}
+
+                \begin{tabular}{p{3cm} p{4cm} p{7cm}}
+                \toprule
+                \textbf{Name} & \textbf{Type} & \textbf{Description} \\ \midrule
+                \texttt{id} & String & ID saved in the route entity \\ \addlinespace
+                \texttt{newPhotoPaths} & \texttt{List<String>} & Containing paths that will be concatenated \\ \bottomrule
+                \end{tabular}
+
+                \paragraph{Returns} \texttt{Unit} 
+
+            \hrulefill
+
+            \subsection*{Function: \texttt{removePhotoPaths(id: String, pathToRemove: List<String>)}}
+
+                In a backkground thread, a variable is made to save the existing list of
+                paths and passes the existing path with the path to remove through the dao
+                function. runCatching is then finally used to remove the corressponding photo from
+                memory. \\
+                Source: data/local/track/TrackedRouteRepository, line 51
+                
+                \subsection*{Parameters}
+
+                \begin{tabular}{p{3cm} p{4cm} p{7cm}}
+                \toprule
+                \textbf{Name} & \textbf{Type} & \textbf{Description} \\ \midrule
+                \texttt{id} & String & ID saved in the route entity \\ \addlinespace
+                \texttt{pathToRemove} & \texttt{List<String>} & Path that will be subtracted from the current path. \\ \bottomrule
+                \end{tabular}
+
+                \paragraph{Returns} \texttt{Unit} 
 
             \hrulefill
 
@@ -301,23 +432,26 @@ data class TrackedRoute(
         \subsection{Frontend Implementation} Similar to the previous Backend Implementation section,
         the frontend 
 
-            \subsection*{Function: \texttt{InsertEntry(item, code, cost, imagePath)}}
+            \subsection*{Function: \texttt{RouteTrackerNavGraph(navController: NavHostController, authRepository: AuthenticationRepsitory, 
+            authViewModel: AuthenticationViewModel, modifier: Modifier = Modifier)}}
 
-                A Function Description \\
-                Source: crudAPI/crudMenu/create.go, line 15
+                The main composable function that allows the user to go between the different screens and 
+                functions. In the MainActivity, this is utilized in the form of a bottom navigation bar.
+                The different routes are defined in the RouteTrackerDestination enum file. \\
+                Source: featuresAPI/navigation/RouteTrackerNavGraph.kt, line 18
 
                 \subsection*{Parameters}
 
-                \begin{tabular}{p{3cm} p{3cm} p{7cm}}
+                \begin{tabular}{p{3cm} p{4cm} p{7cm}}
                 \toprule
                 \textbf{Name} & \textbf{Type} & \textbf{Description} \\ \midrule
-                \texttt{item} & string & Menu item name \\ \addlinespace
-                \texttt{code} & string & Unique item code \\ \addlinespace
-                \texttt{cost} & cost & Cost of item in Kyat \\ \addlinespace
-                \texttt{imagePath} & string & String for the path to image in Render \\ \bottomrule
+                \texttt{navController} & NavHostController & Android's offered controller passed through \textbf{NavHost} \\ \addlinespace
+                \texttt{authRepository} & AuthenticationRepository & Needed to check if user is logged in \\ \addlinespace
+                \texttt{authViewModel} & AuthenticationViewModel & Need for logging the user out from SettingsUI \\ \addlinespace
+                \texttt{modifier} & Modifier & Defaulted as Modifier. For Jetpack Compose \\ \bottomrule
                 \end{tabular}
 
-                \paragraph{Returns}
+                \paragraph{Returns} \texttt{Unit}
 
             \newpage
 
@@ -511,13 +645,15 @@ data class TrackedRoute(
                         \item \textbf{NavController and NavHost Setup}: \url{https://developer.android.com/codelabs/basic-android-kotlin-compose-navigation?hl=ja}
                         \item \textbf{StateFlow and LiveData}: \url{https://developer.android.com/kotlin/flow/stateflow-and-sharedflow?hl=ja}
                         \item \textbf{Switching to Foreground Service}: \url{https://developer.android.com/develop/background-work/services/fgs/restrictions-bg-start}
+                        \item \textbf{runCatching}: \url{https://proandroiddev.com/kotlin-tips-and-tricks-you-may-not-know-7-goodbye-try-catch-hello-trycatching-7135cb382609}
                     \end{enumerate}
 
                 \subsection{Contributions}
 
                     \paragraph{\textbf{Adam}} Created the local Room database structure, their accompanying files, 
                     and focused on creating the layout of the API. Implemented the Composables necessary to get the general
-                    functionality including for tracking, history, feed, and authentication.
+                    functionality including for tracking, history, feed, and authentication. Created LaTeX layout used to 
+                    generate this documentation.
 
                     \paragraph{\textbf{Ayra}}
 
