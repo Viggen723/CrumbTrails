@@ -156,9 +156,18 @@ class FeedRepository(
 
     private fun readPhotoLocation(uri: Uri): Pair<Double, Double>? {
         return runCatching {
+            // If it is a local file path, read it directly using its path string
+            if (uri.scheme == "file") {
+                val exif = ExifInterface(uri.path ?: return null)
+                val latLong = FloatArray(2)
+                if (exif.getLatLong(latLong)) {
+                    return latLong[0].toDouble() to latLong[1].toDouble()
+                }
+                return null
+            }
+
             val resolver = contentResolver ?: return null
             resolver.openInputStream(uri)?.use { inputStream ->
-                // EXIF GPS is optional, so missing location is fine
                 val latLong = FloatArray(2)
                 val hasLocation = ExifInterface(inputStream).getLatLong(latLong)
                 if (hasLocation) {

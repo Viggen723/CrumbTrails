@@ -71,24 +71,31 @@ class HistoryViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    fun shareRouteToFeed(route: TrackedRoute, caption: String, photoUris: List<Uri>) {
-        shareStatusResetJob?.cancel() // a new share is priority over any pending auto clear
+    fun shareRouteToFeed(route: TrackedRoute, caption: String) {
+        shareStatusResetJob?.cancel()
 
         viewModelScope.launch {
             _shareStatus.value = ShareStatus.Loading
+
+            // Convert local private string file paths into file Uris
+            val localPhotoUris = route.photoPaths.map { path ->
+                Uri.fromFile(java.io.File(path))
+            }
+
+            // Pass the Uris to feed repository
             val result = feedRepository.uploadSharedRoute(
                 route = route,
                 caption = caption,
                 userId = FirebaseAuth.getInstance().currentUser?.uid,
-                photoUris = photoUris
+                photoUris = localPhotoUris // Now uploading your cached downsized versions!
             )
+
             _shareStatus.value = if (result.isSuccess) {
                 ShareStatus.Success
             } else {
                 ShareStatus.Error(result.exceptionOrNull().toSafeShareMessage())
             }
 
-            // hide the status message 3 seconds after it appears
             shareStatusResetJob = viewModelScope.launch {
                 delay(3000)
                 _shareStatus.value = ShareStatus.Idle

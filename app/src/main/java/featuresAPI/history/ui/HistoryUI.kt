@@ -113,8 +113,10 @@ fun HistoryUI(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        val selectedPhotoUris = sessionPhotosMap[session.id].orEmpty()
-                        viewModel.shareRouteToFeed(session, shareCaption, selectedPhotoUris)
+                        //  Just pass the session and the caption!
+                        // The ViewModel will extract the already downsized local photos from Room.
+                        viewModel.shareRouteToFeed(session, shareCaption)
+
                         sessionPendingShare = null
                         shareCaption = ""
                     }
