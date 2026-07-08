@@ -193,6 +193,25 @@ data class TrackedRoute(
             of the trackedRoute LatLng list, into a string using Google Maps PolyUtil API. *See Backend 
             Implementation
 
+            \begin{center}
+                \begin{minted}{kotlin}
+data class SharedRoutePost(
+    val postId: String = "",
+    val userId: String = "",
+    val authorName: String = "",
+    val authorUsername: String = "",
+    val routeId: String = "",
+    val tripName: String = "",
+    val caption: String = "",
+    val routeString: String = "",
+    val createdAt: Long = 0L,
+    val pointCount: Int = 0,
+    val photoUrls: List<String> = emptyList(),
+    val photos: List<SharedRoutePhoto> = emptyList()
+)
+                \end{minted}
+            \end{center}
+
 
     \newpage
 
@@ -260,7 +279,7 @@ data class TrackedRoute(
                 \vspace{0.5em}
                 \textbf{Key Components:}
                 \begin{itemize}
-                    \item \texttt{data/}: Handles local Room databases and repository logic.
+                    \item \texttt{data/}: Handles local Room databases and map (GPS) logic.
                     \item \texttt{featuresAPI/}: Contains isolated feature modules to support scalability. Each directory follows MVVM format.
                 \end{itemize}
                 \textbf{NOTE}: Other files not included here have been modified such as gradle build files. See 
@@ -426,6 +445,48 @@ data class TrackedRoute(
                 \paragraph{Returns} \texttt{Unit} 
 
             \hrulefill
+
+            \newpage
+    
+            \subsection*{Function: \texttt{loginWithEmail(email: String, wordPass: String): Flow<Resource<String>>}}
+
+                Using the \textbf{FirebaseAuth} object, this function passing the 
+                corresponding parameters to login with their email and password.\\
+                Source: featuresAPI/authentication/data/AuthenticationRepository, line 16
+                
+                \subsection*{Parameters}
+
+                \begin{tabular}{p{3cm} p{4cm} p{7cm}}
+                \toprule
+                \textbf{Name} & \textbf{Type} & \textbf{Description} \\ \midrule
+                \texttt{email} & String & ID saved in the route entity \\ \addlinespace
+                \texttt{wordPass} & String & Path that will be subtracted from the current path. \\ \bottomrule
+                \end{tabular}
+
+                \paragraph{Returns} \texttt{Flow<Resource<String>>} - A live data pipeline that outputs
+                the current state of the function process, enabling the UI to update it in real time.
+                Depending on the output, it will allow the UI to show a loading symbol, etc.
+
+            \hrulefill
+
+            \subsection*{Function: \texttt{signUpWithEmail(email: String, wordPass: String): Flow<Resource<String>>}}
+
+                Using the \textbf{FirebaseAuth} object, this function passing the 
+                corresponding parameters to make a new in the Firebase server
+                with their email and password. \\
+                Source: featuresAPI/authentication/data/AuthenticationRepository, line 16
+                
+                \subsection*{Parameters}
+
+                \begin{tabular}{p{3cm} p{4cm} p{7cm}}
+                \toprule
+                \textbf{Name} & \textbf{Type} & \textbf{Description} \\ \midrule
+                \texttt{email} & String & ID saved in the route entity \\ \addlinespace
+                \texttt{wordPass} & String & Path that will be subtracted from the current path. \\ \bottomrule
+                \end{tabular}
+
+                \paragraph{Returns} \texttt{Flow<Resource<String>>} - A live data pipeline that outputs
+                the current state of the function process, similar to the above function.
 
             \newpage
 
@@ -678,12 +739,29 @@ data class TrackedRoute(
                 application environment:
 
                 \begin{enumerate}
-                    \item 
+                    \item Testing in a real-world scenario to ensure expected results are consistent
+                    \item Test for edge cases (Unintended use cases, etc.)
+                    \item Clean installation to simulate a new user installing the application.
                 \end{enumerate}
 
                 \newpage
                 
                 \subsection{Known Limitations}
+
+                Currently, the largest known limitation is the issue of a deploying strategy. As stated before, this application uses
+                Google's API platforms for both the Maps and Firebase services. Going forward, our plan is to create a way to monetize 
+                the application, without causing the user overly to take the burden. A current candidate would be to place small adds
+                after saving a route and, in the best poosible case, have adds as relevant and interesting as possible. An example of 
+                this could include newly released motorcycle gear, etc.
+
+                Another limitation which is a priority is, due to the time crunch of this project, photos are costly to upload to the
+                feed. Now, we have the infrusture to implement a fix. Currently there is a photo downsizer object that is currently 
+                used to save the copy of the uploaded photo. Fixing the logic to have the application send that downsized version instead 
+                of the original will fix this issue.
+
+                Lastly, there is one bug causing the polyline to not update correctly in real-time. As the application is tracking, the 
+                logic is in place to have the blue polyline to give the user the track that they have traveled. It is not reliable at
+                the moment, and fixes for this is in the pipeline.
 
             \newpage
 

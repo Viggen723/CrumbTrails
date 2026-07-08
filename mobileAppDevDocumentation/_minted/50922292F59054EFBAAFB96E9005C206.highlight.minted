@@ -1,0 +1,16 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kd}{data}\PYG{+w}{ }\PYG{k+kd}{class}\PYG{+w}{ }\PYG{n+nc}{SharedRoutePost}\PYG{p}{(}
+\PYG{+w}{    }\PYG{k+kd}{val}\PYG{+w}{ }\PYG{n+nv}{postId}\PYG{p}{:}\PYG{+w}{ }\PYG{k+kt}{String}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}}\PYG{l+s}{\PYGZdq{}}\PYG{p}{,}
+\PYG{+w}{    }\PYG{k+kd}{val}\PYG{+w}{ }\PYG{n+nv}{userId}\PYG{p}{:}\PYG{+w}{ }\PYG{k+kt}{String}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}}\PYG{l+s}{\PYGZdq{}}\PYG{p}{,}
+\PYG{+w}{    }\PYG{k+kd}{val}\PYG{+w}{ }\PYG{n+nv}{authorName}\PYG{p}{:}\PYG{+w}{ }\PYG{k+kt}{String}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}}\PYG{l+s}{\PYGZdq{}}\PYG{p}{,}
+\PYG{+w}{    }\PYG{k+kd}{val}\PYG{+w}{ }\PYG{n+nv}{authorUsername}\PYG{p}{:}\PYG{+w}{ }\PYG{k+kt}{String}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}}\PYG{l+s}{\PYGZdq{}}\PYG{p}{,}
+\PYG{+w}{    }\PYG{k+kd}{val}\PYG{+w}{ }\PYG{n+nv}{routeId}\PYG{p}{:}\PYG{+w}{ }\PYG{k+kt}{String}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}}\PYG{l+s}{\PYGZdq{}}\PYG{p}{,}
+\PYG{+w}{    }\PYG{k+kd}{val}\PYG{+w}{ }\PYG{n+nv}{tripName}\PYG{p}{:}\PYG{+w}{ }\PYG{k+kt}{String}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}}\PYG{l+s}{\PYGZdq{}}\PYG{p}{,}
+\PYG{+w}{    }\PYG{k+kd}{val}\PYG{+w}{ }\PYG{n+nv}{caption}\PYG{p}{:}\PYG{+w}{ }\PYG{k+kt}{String}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}}\PYG{l+s}{\PYGZdq{}}\PYG{p}{,}
+\PYG{+w}{    }\PYG{k+kd}{val}\PYG{+w}{ }\PYG{n+nv}{routeString}\PYG{p}{:}\PYG{+w}{ }\PYG{k+kt}{String}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}}\PYG{l+s}{\PYGZdq{}}\PYG{p}{,}
+\PYG{+w}{    }\PYG{k+kd}{val}\PYG{+w}{ }\PYG{n+nv}{createdAt}\PYG{p}{:}\PYG{+w}{ }\PYG{k+kt}{Long}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m}{0L}\PYG{p}{,}
+\PYG{+w}{    }\PYG{k+kd}{val}\PYG{+w}{ }\PYG{n+nv}{pointCount}\PYG{p}{:}\PYG{+w}{ }\PYG{k+kt}{Int}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m}{0}\PYG{p}{,}
+\PYG{+w}{    }\PYG{k+kd}{val}\PYG{+w}{ }\PYG{n+nv}{photoUrls}\PYG{p}{:}\PYG{+w}{ }\PYG{n}{List}\PYG{o}{\PYGZlt{}}\PYG{k+kt}{String}\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{emptyList}\PYG{p}{(}\PYG{p}{)}\PYG{p}{,}
+\PYG{+w}{    }\PYG{k+kd}{val}\PYG{+w}{ }\PYG{n+nv}{photos}\PYG{p}{:}\PYG{+w}{ }\PYG{n}{List}\PYG{o}{\PYGZlt{}}\PYG{n}{SharedRoutePhoto}\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{emptyList}\PYG{p}{(}\PYG{p}{)}
+\PYG{p}{)}
+\end{MintedVerbatim}

@@ -14,23 +14,25 @@
 \contentsline {paragraph}{Returns}{8}{}%
 \contentsline {paragraph}{Returns}{9}{}%
 \contentsline {paragraph}{Returns}{9}{}%
-\contentsline {subsection}{\numberline {3.2}Frontend Implementation}{10}{}%
 \contentsline {paragraph}{Returns}{10}{}%
 \contentsline {paragraph}{Returns}{10}{}%
+\contentsline {subsection}{\numberline {3.2}Frontend Implementation}{11}{}%
 \contentsline {paragraph}{Returns}{11}{}%
 \contentsline {paragraph}{Returns}{11}{}%
-\contentsline {section}{\numberline {4}Requirements and Installation Instructions}{12}{}%
-\contentsline {subsection}{\numberline {4.1}System Requirements}{12}{}%
-\contentsline {paragraph}{AndroidX / Jetpack}{13}{}%
-\contentsline {paragraph}{Google / Firebase / Maps}{14}{}%
-\contentsline {paragraph}{Utilities}{14}{}%
-\contentsline {subsection}{\numberline {4.2}Installation Instructions}{14}{}%
-\contentsline {section}{\numberline {5}Testing}{15}{}%
-\contentsline {subsection}{\numberline {5.1}Summary}{15}{}%
-\contentsline {subsection}{\numberline {5.2}Known Limitations}{16}{}%
-\contentsline {section}{\numberline {6}Attributions and Citations}{17}{}%
-\contentsline {subsection}{\numberline {6.1}Cited Works}{17}{}%
-\contentsline {subsection}{\numberline {6.2}Contributions}{17}{}%
-\contentsline {paragraph}{\textbf {Adam}}{17}{}%
-\contentsline {paragraph}{\textbf {Ayra}}{17}{}%
-\contentsline {paragraph}{\textbf {Ibrahim}}{17}{}%
+\contentsline {paragraph}{Returns}{12}{}%
+\contentsline {paragraph}{Returns}{12}{}%
+\contentsline {section}{\numberline {4}Requirements and Installation Instructions}{13}{}%
+\contentsline {subsection}{\numberline {4.1}System Requirements}{13}{}%
+\contentsline {paragraph}{AndroidX / Jetpack}{14}{}%
+\contentsline {paragraph}{Google / Firebase / Maps}{15}{}%
+\contentsline {paragraph}{Utilities}{15}{}%
+\contentsline {subsection}{\numberline {4.2}Installation Instructions}{15}{}%
+\contentsline {section}{\numberline {5}Testing}{16}{}%
+\contentsline {subsection}{\numberline {5.1}Summary}{16}{}%
+\contentsline {subsection}{\numberline {5.2}Known Limitations}{17}{}%
+\contentsline {section}{\numberline {6}Attributions and Citations}{18}{}%
+\contentsline {subsection}{\numberline {6.1}Cited Works}{18}{}%
+\contentsline {subsection}{\numberline {6.2}Contributions}{18}{}%
+\contentsline {paragraph}{\textbf {Adam}}{18}{}%
+\contentsline {paragraph}{\textbf {Ayra}}{18}{}%
+\contentsline {paragraph}{\textbf {Ibrahim}}{18}{}%
