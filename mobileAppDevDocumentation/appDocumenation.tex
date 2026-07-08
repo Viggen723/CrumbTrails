@@ -562,6 +562,33 @@ data class SharedRoutePost(
 
             \hrulefill
 
+            \subsection*{Function: \texttt{shareRouteToFeed(route: TrackedRoute, caption: String)}}
+
+                This function is used when the user shares a saved route from the History
+                screen. Each saved session card contains a share button, which opens an alert
+                dialog asking the user to add a caption before posting the route. Once the user
+                confirms the share action, the selected route/session and caption are sent through
+                the HistoryViewModel. Any photos already attached to the route are converted into
+                photo URIs and included in the upload. The route points are encoded into a
+                \textbf{routeString} so the Feed can redraw the shared route later. If photos are
+                included, they are uploaded to Firebase Storage first, and the shared post data is
+                then saved for Feed display. The Feed screen listens to shared route posts and
+                displays routes from users in the application. \\
+                Source: featuresAPI/history/ui/HistoryUI.kt, line 118; featuresAPI/history/viewModel/HistoryViewModel.kt, line 74; featuresAPI/feed/data/FeedRepository.kt, line 34
+
+                \subsection*{Parameters}
+
+                \begin{tabular}{p{3cm} p{4cm} p{7cm}}
+                \toprule
+                \textbf{Name} & \textbf{Type} & \textbf{Description} \\ \midrule
+                \texttt{route} & TrackedRoute & Saved route/session selected from History \\ \addlinespace
+                \texttt{caption} & String & User entered caption for the shared Feed post \\ \bottomrule
+                \end{tabular}
+
+                \paragraph{Returns} \texttt{Unit}
+
+            \hrulefill
+
              \subsection*{Function: \texttt{fun()}}
 
                 Nothing yet \\
