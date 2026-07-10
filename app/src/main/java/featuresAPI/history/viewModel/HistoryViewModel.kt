@@ -25,8 +25,6 @@ sealed interface ShareStatus {
     data class Error(val message: String) : ShareStatus
 }
 
-// https://developer.android.com/kotlin/flow/stateflow-and-sharedflow
-// developer.android.com/topic/architecture/ui-layer/state-production
 class HistoryViewModel(application: Application) : AndroidViewModel(application) {
 
     private val database = RouteTrackerDatabase.getDatabase(application)
@@ -47,7 +45,7 @@ class HistoryViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    // Downsizes each picked photo via Coil, saves the result to app-private
+    // Downsizes each picked photo via Coil, saves the result to app private
     // storage, then persists the saved paths onto the existing route in Room.
     fun attachPhotos(routeId: String, uris: List<Uri>) {
         if (uris.isEmpty()) return

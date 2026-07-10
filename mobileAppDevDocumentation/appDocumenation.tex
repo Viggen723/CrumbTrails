@@ -711,7 +711,7 @@ data class SharedRoutePost(
                             \item \texttt{POST\_NOTIFICATIONS}
                         \end{itemize}
 
-                    (Used for GPS route tracking via a foreground \texttt{TrackingService}, and notifying the user while tracking is active.)
+                    (Used for GPS route tracking via the foreground \texttt{TrackingService}, and notifying the user while tracking is active.)
 
                     \subsubsection*{Library Dependencies}
 
@@ -846,7 +846,13 @@ data class SharedRoutePost(
                 Another limitation which is a priority is, due to the time crunch of this project, photos are costly to upload to the
                 feed. Now, we have the infrastructure to implement a fix. Currently there is a photo downsizer object that is currently 
                 used to save the copy of the uploaded photo. Fixing the logic to have the application send that downsized version instead 
-                of the original will fix this issue.
+                of the original will fix this issue. \textbf{FIXED}
+
+                In addition, Google's Embedded Photo Viewer is in early stages in development and only available for newer devices.
+                While we have a failsafe to load the legacy viewer if a device is not compatible, ones that are seem to have issues.
+                Upon scrolling on a photo, the scrolling mechanism seems to conflict with something, causing it to get stuck. When
+                clicking on a photo, it allows for one normal scroll input before returning back to its bugged state. This will be 
+                looked further into although it seems to be a bug in this API.
 
                 Lastly, there is one bug causing the polyline to not update correctly in real-time. As the application is tracking, the 
                 logic is in place to have the blue polyline to give the user the track that they have traveled. It is not reliable at
@@ -880,10 +886,16 @@ data class SharedRoutePost(
 
                 \subsection{Contributions}
 
-                    \paragraph{\textbf{Adam}} Created the local Room database structure, their accompanying files, 
-                    and focused on creating the layout of the API. Implemented the Composables necessary to get the general
-                    functionality including for tracking, history, feed, and authentication. Created LaTeX layout used to 
-                    generate this documentation.
+                    \paragraph{\textbf{Adam}} Designed and implemented the local Room database structure and its 
+                        supporting files, and led the overall architecture of the API layer. Built the Composables 
+                        that display the app's core functionality, including tracking, history, feed, and authentication. 
+                        Implemented the tracking service and its accompanying foreground service using the Google 
+                        Location Services API, along with the database logic driving the tracking and history 
+                        features. Authored the LaTeX documentation layout, including the API reference, directory 
+                        map, and accompanying graphics, as well as the written sections covering the application's 
+                        functionality, technical architecture, and project motivation. Once completed, saught to 
+                        fix issues in the app;ication. These include but not limited to downsizing photos before 
+                        sending to Firebase's persistent disk and photos not correctly uploading to feed.
 
                 \newpage
 
@@ -902,6 +914,8 @@ data class SharedRoutePost(
                             \item Helped connect tracking, history, Firebase sharing, and Feed features into one workflow
                         \end{enumerate}
 
-                    \paragraph{\textbf{Ibrahim}} \smiley 
+                    \paragraph{\textbf{Ibrahim}} Created and implemented the login and authentication system using Firebase Authentication. Developed the login
+                        and sign-up screens, handled user authentication and error messages, and connected the authentication flow to the app
+                        navigation so users can securely log in, create accounts, and access the application's main features. \smiley 
 
     \end{document}
