@@ -36,10 +36,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import coil.compose.AsyncImage
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.routetracker.R
 import com.google.android.gms.maps.model.CameraPosition
@@ -454,6 +457,7 @@ private fun FeedRouteMapDialog(
                 .clip(RoundedCornerShape(20.dp))
                 .background(MaterialTheme.colorScheme.surface)
         ) {
+            var selectedPhotoPin by remember { mutableStateOf<MapPhotoPin?>(null) }
             val singlePointRouteMarkerState = rememberMarkerState(position = routePoints.first())
             val cameraPositionState = remember(postId, routePoints) {
                 val centerPoint = routePoints[routePoints.size / 2]
@@ -476,16 +480,52 @@ private fun FeedRouteMapDialog(
                     Marker(state = singlePointRouteMarkerState)
                 }
 
-                PhotoThumbnailMarkers(pins = photoPins)
+                PhotoThumbnailMarkers(
+                    pins = photoPins,
+                    onPhotoClick = { selectedPhotoPin = it }
+                )
             }
 
-            IconButton(
-                onClick = onDismiss,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(8.dp)
-            ) {
-                Icon(Icons.Filled.Close, contentDescription = "Close")
+            selectedPhotoPin?.let { pin ->
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .background(MaterialTheme.colorScheme.surface),
+                    contentAlignment = Alignment.Center
+                ) {
+                    AsyncImage(
+                        model = pin.imageSource,
+                        contentDescription = "Route photo",
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp)
+                    )
+
+                    IconButton(
+                        onClick = { selectedPhotoPin = null },
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp)
+                    ) {
+                        Icon(
+                            Icons.Filled.Close,
+                            contentDescription = "Close photo",
+                            tint = Color.White
+                        )
+                    }
+                }
+            }
+
+            if (selectedPhotoPin == null) {
+                IconButton(
+                    onClick = onDismiss,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                ) {
+                    Icon(Icons.Filled.Close, contentDescription = "Close")
+                }
             }
         }
     }

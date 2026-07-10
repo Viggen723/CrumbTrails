@@ -53,12 +53,14 @@ fun fallbackRoutePosition(
 @GoogleMapComposable
 fun PhotoThumbnailMarkers(
     pins: List<MapPhotoPin>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onPhotoClick: ((MapPhotoPin) -> Unit)? = null
 ) {
     pins.forEachIndexed { index, pin ->
         PhotoThumbnailMarker(
             pin = pin,
-            modifier = modifier
+            modifier = modifier,
+            onPhotoClick = onPhotoClick
         )
     }
 }
@@ -67,7 +69,8 @@ fun PhotoThumbnailMarkers(
 @GoogleMapComposable
 private fun PhotoThumbnailMarker(
     pin: MapPhotoPin,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onPhotoClick: ((MapPhotoPin) -> Unit)? = null
 ) {
     val context = LocalContext.current
     var thumbnailIcon by remember(pin.imageSource) { mutableStateOf<BitmapDescriptor?>(null) }
@@ -97,7 +100,11 @@ private fun PhotoThumbnailMarker(
         state = MarkerState(position = pin.position),
         anchor = Offset(0.5f, 1.0f),
         icon = thumbnailIcon,
-        zIndex = if (thumbnailIcon == null) 0f else 2f
+        zIndex = if (thumbnailIcon == null) 0f else 2f,
+        onClick = {
+            onPhotoClick?.invoke(pin)
+            onPhotoClick != null
+        }
     )
 }
 
