@@ -21,6 +21,12 @@
 
 \usepackage{tcolorbox}
 
+\usepackage{subcaption}
+
+\usepackage{grffile}
+
+\usepackage{float}
+
 
 \definecolor{lightgray}{rgb}{0.95, 0.95, 0.95}
 
@@ -101,19 +107,47 @@
             a card, a dialog box is shown to preview the line of the route in Google Maps. Each 
             card also has buttons integrating functions to add photos to the route which 
             appear on the map, as well as delete and share. Sharing then sends the route to 
-            a cloud-based database linked to the user's'account created upon startup of the 
+            a cloud-based database linked to the user's account created upon startup of the 
             application.
 
-            Sharing sends the route, along with the choosen photos to the server. This is then shown
+            Sharing sends the route, along with the chosen photos to the server. This is then shown
             in the feed section of the application. Posts from other uses are also displayed here,
             where everyone can discover new routes that they have not known existed!
+
+            \begin{figure}[H]
+                \centering
+                \begin{subfigure}[b]{0.31\textwidth}
+                    \centering
+                    \includegraphics[height=8.0cm, width=\textwidth, keepaspectratio]{images/Screenshot_20260708_174627_Crumb Trails.jpg}
+                    \caption{Screen 1}
+                    \label{fig:screen1}
+                \end{subfigure}
+                \hfill 
+                \begin{subfigure}[b]{0.31\textwidth}
+                    \centering
+                    \includegraphics[height=8.0cm, width=\textwidth, keepaspectratio]{images/Screenshot_20260708_174646_Crumb Trails.jpg}
+                    \caption{Screen 2}
+                    \label{fig:screen2}
+                \end{subfigure}
+                \hfill
+                \begin{subfigure}[b]{0.31\textwidth}
+                    \centering
+                    \includegraphics[height=8.0cm, width=\textwidth, keepaspectratio]{images/Screenshot_20260708_174900_Crumb Trails.jpg}
+                    \caption{Screen 3}
+                    \label{fig:screen3}
+                \end{subfigure}
+                \caption{Crumb Trails interface screenshots.}
+                \label{fig:app_screenshots}
+            \end{figure}
+
+            \newpage
 
         \subsection{Motivation for Creation}
 
             Motivated from personal woes, Crumb Trails was created to solve the one problem that comes
             with any joy rides, aimless walks, or curious bicycle trips. When finishing a trip, 
             "where was that beautiful piece of tarmac again?" or "man, I would love to make that my 
-            run route for now on... But what turn did I take to get there?" - These thoughts may 
+            run route from now on... But what turn did I take to get there?" - These thoughts may 
             come to mind wishing you wrote it on a map as when went. Crumb Trails main feature is
             centered around solving this problem, giving users ways to share and record these routes
             for ease of use.
@@ -159,7 +193,7 @@
         uses SQLite3 as its functional base. Made of three distinct parts, Room is utilized to
         perform typical CRUD operation on the table containing the user's tracked routes,
         the time that the route was taken as well as directory paths of photos that were added
-        post-trip. This project has one table for the routes, therefore, three main componenets;
+        post-trip. This project has one table for the routes, therefore, three main components;
         the \textbf{TrackedRouteEntity}, \textbf{TrackedRouteDao}, and \textbf{TrackedRouteRepository}. 
         These are then connected via the \textbf{RouteTrackerDatabase}, which is then instantiated 
         in the history tab. By using the functions supplied in the DAO, or data access object, the 
@@ -211,6 +245,12 @@ data class SharedRoutePost(
 )
                 \end{minted}
             \end{center}
+
+            In order to create the payload that will be recieved from the Firebase database.
+            The \textbf{getSharedRoutes()} function outputs a Flow List of these data class 
+            objects for the UI to then show the posts that have been shared in an asynchronous
+            fashion.
+            
 
 
     \newpage
@@ -396,8 +436,10 @@ data class SharedRoutePost(
                 \begin{tabular}{p{3cm} p{4cm} p{7cm}}
                 \toprule
                 \textbf{Name} & \textbf{Type} & \textbf{Description} \\ \midrule
-                \texttt{id} & String & ID saved in the route entity \\ \addlinespace
-                \texttt{photoPaths} & List<String> & Containing the path to each photo in local storage \\ \bottomrule
+                \texttt{startedAtEpochMillis} & Long & Start of tracked route in ms \\ \addlinespace
+                \texttt{endedAtEpochMillis} & Long & End of tracked route in ms \\ \addlinespace
+                \texttt{path} & \texttt{List<LatLng>} & List of latitude and longitude points \\ \addlinespace
+                \texttt{tripName} & String & User-entered name of the route \\ \bottomrule
                 \end{tabular}
 
                 \paragraph{Returns} \texttt{Unit} 
@@ -459,8 +501,8 @@ data class SharedRoutePost(
                 \begin{tabular}{p{3cm} p{4cm} p{7cm}}
                 \toprule
                 \textbf{Name} & \textbf{Type} & \textbf{Description} \\ \midrule
-                \texttt{email} & String & ID saved in the route entity \\ \addlinespace
-                \texttt{wordPass} & String & Path that will be subtracted from the current path. \\ \bottomrule
+                \texttt{email} & String & User's registered email \\ \addlinespace
+                \texttt{wordPass} & String & User's registered password \\ \bottomrule
                 \end{tabular}
 
                 \paragraph{Returns} \texttt{Flow<Resource<String>>} - A live data pipeline that outputs
@@ -481,8 +523,8 @@ data class SharedRoutePost(
                 \begin{tabular}{p{3cm} p{4cm} p{7cm}}
                 \toprule
                 \textbf{Name} & \textbf{Type} & \textbf{Description} \\ \midrule
-                \texttt{email} & String & ID saved in the route entity \\ \addlinespace
-                \texttt{wordPass} & String & Path that will be subtracted from the current path. \\ \bottomrule
+                \texttt{email} & String & Email to be registered in server \\ \addlinespace
+                \texttt{wordPass} & String & Password to be registered in server \\ \bottomrule
                 \end{tabular}
 
                 \paragraph{Returns} \texttt{Flow<Resource<String>>} - A live data pipeline that outputs
@@ -522,7 +564,7 @@ data class SharedRoutePost(
                 This function has the role of both starting the starting the tracking service
                 and moving it to the background as a foreground service and building the notification
                 stating that the tracking is ongoing. Once initiated, a variable in the class 
-                \textbf{trackingJob} is then modified in a background thread, colleting the path 
+                \textbf{trackingJob} is then modified in a background thread, collecting the path 
                 points that form the route (LatLng). An Intent is then used in the TrackingViewModel
                 to start and to pass the data between the two. \\
                 Source: featuresAPI/tracking/service/TrackingService, line 84
@@ -583,23 +625,6 @@ data class SharedRoutePost(
                 \textbf{Name} & \textbf{Type} & \textbf{Description} \\ \midrule
                 \texttt{route} & TrackedRoute & Saved route/session selected from History \\ \addlinespace
                 \texttt{caption} & String & User entered caption for the shared Feed post \\ \bottomrule
-                \end{tabular}
-
-                \paragraph{Returns} \texttt{Unit}
-
-            \hrulefill
-
-             \subsection*{Function: \texttt{fun()}}
-
-                Nothing yet \\
-                Source: featuresAPI/tracking/service/TrackingService, line 109
-
-                \subsection*{Parameters}
-
-                \begin{tabular}{p{3cm} p{4cm} p{7cm}}
-                \toprule
-                \textbf{Name} & \textbf{Type} & \textbf{Description} \\ \midrule
-                \texttt{No parameters} 
                 \end{tabular}
 
                 \paragraph{Returns} \texttt{Unit}
@@ -749,7 +774,10 @@ data class SharedRoutePost(
                     \item Install \textbf{Android Studio}.
                     \item Clone the repository.
                     \item Create a \textbf{Google Maps API key} and add it to \texttt{local.properties} as \texttt{GOOGLE\_MAPS\_API\_KEY}.
-                    \item Create a \textbf{Firebase project}, download \texttt{google-services.json}, and place it in \texttt{/app}.
+                    \item Create a \textbf{Firebase project} for the Android app. In the Firebase Console, add an Android app using the project package name, download \texttt{google-services.json}, and place it at \texttt{app/google-services.json}.
+                    \item Enable \textbf{Firebase Authentication} by going to \textbf{Authentication > Sign-in method} in the Firebase Console, then enabling the \textbf{Email/Password} provider. The application uses FirebaseAuth for login, sign up, and logout.
+                    \item Enable \textbf{Firebase Realtime Database} by going to \textbf{Realtime Database} in the Firebase Console and selecting \textbf{Create database}. Choose a database location if prompted and configure database rules appropriate for authenticated users. The application stores shared Feed route posts under \texttt{sharedRoutes} and user profile data under \texttt{users/\{uid\}}.
+                    \item Enable \textbf{Firebase Storage} by going to \textbf{Storage} in the Firebase Console and selecting \textbf{Get started}. Choose a storage location if prompted and configure Storage rules appropriate for authenticated uploads and reads. The application uses Storage for shared route photos and saves their download URLs with Feed post data.
                     \item Ensure a target device/emulator runs \textbf{Android 14 (API 34) or newer}.
                     \item Sync Gradle and build --- internet access is required for Gradle/Maven dependency downloads and for the app itself (Maps, Firebase) at runtime.
                 \end{enumerate}
@@ -762,14 +790,48 @@ data class SharedRoutePost(
 
                 \subsection{Summary}
 
-                The following is our testing method for ensuring a complete, safe
-                application environment:
+                    Testing for this application was primarily performed through manual workflow
+                    testing and integration testing with the external services used by the app. The
+                    repository currently contains only the default example unit and instrumented test
+                    files, so these do not represent full automated coverage of the implemented
+                    features. As a result, testing focused on verifying the main user flows on a clean
+                    build with the required Google Maps and Firebase configuration supplied.
 
-                \begin{enumerate}
-                    \item Testing in a real-world scenario to ensure expected results are consistent
-                    \item Test for edge cases (Unintended use cases, etc.)
-                    \item Clean installation to simulate a new user installing the application.
-                \end{enumerate}
+                    \begin{enumerate}
+                        \item \textbf{Build and installation verification}: The project was checked
+                        through Gradle sync/build and clean installation with the required
+                        \texttt{local.properties} and \texttt{app/google-services.json} files in place.
+
+                        \item \textbf{Authentication flow}: Firebase Authentication behavior was
+                        checked through sign-up, login, invalid input handling, and logout.
+
+                        \item \textbf{Route tracking flow}: Location permission behavior, map loading,
+                        Start tracking, Stop tracking, route naming, foreground tracking behavior, and
+                        saved route creation were checked as part of the main tracking workflow.
+
+                        \item \textbf{History and saved routes}: Saved routes were checked in the
+                        History screen, including session cards, route map previews, local deletion,
+                        and empty history behavior.
+
+                        \item \textbf{Photos}: Photo attachment was checked through the History flow,
+                        including local photo handling, attached photo counts, map photo thumbnails,
+                        and cases where no photos were attached.
+
+                        \item \textbf{Feed and Firebase integration}: Route sharing was checked with
+                        Firebase Realtime Database and Firebase Storage by sharing saved routes,
+                        uploading included photos, displaying shared Feed posts, opening Feed map
+                        previews, filtering posts, editing captions, and deleting posts owned by the
+                        current user.
+
+                        \item \textbf{Settings}: Profile save behavior was checked by updating the
+                        username and display name, verifying that profile data is used for Feed author
+                        display, and confirming that logout returns the user to the login flow.
+
+                        \item \textbf{Edge cases}: Testing also considered empty route names, denied
+                        permissions, empty Feed and History states, routes without photos, network
+                        loss, Firebase failure cases, and other unintended user inputs.
+                    \end{enumerate}
+
 
                 \newpage
                 
@@ -777,12 +839,12 @@ data class SharedRoutePost(
 
                 Currently, the largest known limitation is the issue of a deploying strategy. As stated before, this application uses
                 Google's API platforms for both the Maps and Firebase services. Going forward, our plan is to create a way to monetize 
-                the application, without causing the user overly to take the burden. A current candidate would be to place small adds
-                after saving a route and, in the best poosible case, have adds as relevant and interesting as possible. An example of 
+                the application, without causing the user overly to take the burden. A current candidate would be to place small ads
+                after saving a route and, in the best possible case, have ads as relevant and interesting as possible. An example of 
                 this could include newly released motorcycle gear, etc.
 
                 Another limitation which is a priority is, due to the time crunch of this project, photos are costly to upload to the
-                feed. Now, we have the infrusture to implement a fix. Currently there is a photo downsizer object that is currently 
+                feed. Now, we have the infrastructure to implement a fix. Currently there is a photo downsizer object that is currently 
                 used to save the copy of the uploaded photo. Fixing the logic to have the application send that downsized version instead 
                 of the original will fix this issue.
 
@@ -823,7 +885,22 @@ data class SharedRoutePost(
                     functionality including for tracking, history, feed, and authentication. Created LaTeX layout used to 
                     generate this documentation.
 
+                \newpage
+
                     \paragraph{\textbf{Ayra}}
+                        \begin{enumerate}
+                            \item Helped integrate Firebase services into the Android project
+                            \item Supported Firebase Realtime Database, and Storage setup
+                            \item Worked on sharing saved History routes to the Feed
+                            \item Helped store shared route data as encoded values
+                            \item Added support for sharing routes with captions and attached photos
+                            \item Improved photo display using thumbnail markers on maps
+                            \item Helped apply photo markers to History previews and Feed map previews
+                            \item Worked on Feed post display, author name formatting, edit caption, and delete post behavior
+                            \item Added tracking customization settings for update interval and minimum distance
+                            \item Added the feature to customize the display name and the user name in Settings for Feed posts
+                            \item Helped connect tracking, history, Firebase sharing, and Feed features into one workflow
+                        \end{enumerate}
 
                     \paragraph{\textbf{Ibrahim}} \smiley 
 
