@@ -2,7 +2,6 @@ package featuresAPI.feed.data
 
 import android.content.ContentResolver
 import android.net.Uri
-import android.util.Log
 import androidx.exifinterface.media.ExifInterface
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -31,9 +30,6 @@ class FeedRepository(
     private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
     private val contentResolver: ContentResolver? = null
 ) {
-    private companion object {
-        const val TAG = "RoutePhotoExif"
-    }
 
     suspend fun uploadSharedRoute(
         route: TrackedRoute,
@@ -148,11 +144,6 @@ class FeedRepository(
             val photoReference = storage.reference
                 .child("sharedRoutes/$storageUserId/$postId/photos/$index.jpg")
             val photoLocation = readPhotoLocation(uri)
-            Log.d(
-                TAG,
-                "Upload photo EXIF for $uri: hasGps=${photoLocation != null}" +
-                        if (photoLocation != null) " lat=${photoLocation.first} lon=${photoLocation.second}" else ""
-            )
             photoReference.putFile(uri).awaitTask()
             val downloadUrl = photoReference.downloadUrl.awaitTask().toString()
             SharedRoutePhoto(
@@ -170,10 +161,8 @@ class FeedRepository(
                 val exif = ExifInterface(uri.path ?: return null)
                 val latLong = FloatArray(2)
                 if (exif.getLatLong(latLong)) {
-                    Log.d(TAG, "Read file EXIF GPS from $uri")
                     return latLong[0].toDouble() to latLong[1].toDouble()
                 }
-                Log.d(TAG, "No file EXIF GPS found for $uri")
                 return null
             }
 
@@ -182,10 +171,8 @@ class FeedRepository(
                 val latLong = FloatArray(2)
                 val hasLocation = ExifInterface(inputStream).getLatLong(latLong)
                 if (hasLocation) {
-                    Log.d(TAG, "Read content EXIF GPS from $uri")
                     latLong[0].toDouble() to latLong[1].toDouble()
                 } else {
-                    Log.d(TAG, "No content EXIF GPS found for $uri")
                     null
                 }
             }

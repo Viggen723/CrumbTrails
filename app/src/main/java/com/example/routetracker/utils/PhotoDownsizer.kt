@@ -5,7 +5,6 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import android.util.Log
 import androidx.exifinterface.media.ExifInterface
 import androidx.core.graphics.drawable.toBitmap
 import coil.imageLoader
@@ -26,7 +25,6 @@ import java.util.UUID
  */
 object PhotoDownsizer {
 
-    private const val TAG = "RoutePhotoExif"
     private const val MAX_DIMENSION_PX = 1024
     private const val JPEG_QUALITY = 80
 
@@ -84,37 +82,15 @@ object PhotoDownsizer {
     ) {
         val sourceExif = context.openOriginalMediaInputStream(sourceUri)?.use { inputStream ->
             ExifInterface(inputStream)
-        } ?: run {
-            Log.w(TAG, "Could not open source URI for EXIF copy: $sourceUri")
-            return
-        }
-
-        val sourceLatLong = FloatArray(2)
-        val sourceHasGps = sourceExif.getLatLong(sourceLatLong)
-        Log.d(
-            TAG,
-            "Source EXIF GPS for $sourceUri: hasGps=$sourceHasGps" +
-                    if (sourceHasGps) " lat=${sourceLatLong[0]} lon=${sourceLatLong[1]}" else ""
-        )
+        } ?: return
 
         val destinationExif = ExifInterface(destinationPath)
-        var copiedAttributeCount = 0
         EXIF_ATTRIBUTES_TO_COPY.forEach { attribute ->
             sourceExif.getAttribute(attribute)?.let { value ->
                 destinationExif.setAttribute(attribute, value)
-                copiedAttributeCount++
             }
         }
         destinationExif.saveAttributes()
-
-        val savedLatLong = FloatArray(2)
-        val savedHasGps = ExifInterface(destinationPath).getLatLong(savedLatLong)
-        Log.d(
-            TAG,
-            "Saved EXIF GPS for $destinationPath: copiedAttributes=$copiedAttributeCount " +
-                    "hasGps=$savedHasGps" +
-                    if (savedHasGps) " lat=${savedLatLong[0]} lon=${savedLatLong[1]}" else ""
-        )
     }
 
     private fun Context.openOriginalMediaInputStream(sourceUri: Uri) =
@@ -123,15 +99,10 @@ object PhotoDownsizer {
                 MediaStore.setRequireOriginal(sourceUri)
             }
             val originalUri = originalUriResult.getOrDefault(sourceUri)
-            Log.d(
-                TAG,
-                "setRequireOriginal for $sourceUri: success=${originalUriResult.isSuccess} originalUri=$originalUri"
-            )
 
             runCatching {
                 contentResolver.openInputStream(originalUri)
             }.getOrElse {
-                Log.w(TAG, "Opening original URI failed; falling back to redacted URI: $sourceUri", it)
                 contentResolver.openInputStream(sourceUri)
             }
         } else {
