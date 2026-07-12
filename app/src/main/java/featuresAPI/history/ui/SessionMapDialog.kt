@@ -24,6 +24,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,6 +38,7 @@ import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
 import com.example.routetracker.R
 import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.CameraPositionState
@@ -69,13 +71,26 @@ fun SessionMapDialog(
                     .fillMaxWidth()
                     .height(360.dp)
             ) {
+                val photoPins = remember(photoUris, session.trackedRoute, context) {
+                    photoUris.toHistoryPhotoPins(context, session.trackedRoute)
+                }
+                val mapPoints = remember(session.trackedRoute, photoPins) {
+                    session.trackedRoute + photoPins.map { it.position }
+                }
                 val cameraPositionState = remember(session.id) {
-                    val bounds = LatLngBounds.builder().apply {
-                        session.trackedRoute.forEach { include(it) }
-                    }.build()
+                    val bounds = mapPoints.toLatLngBounds()
                     CameraPositionState(
-                        position = CameraPosition.fromLatLngZoom(bounds.center, 15f)
+                        position = CameraPosition.fromLatLngZoom(
+                            bounds?.center ?: session.trackedRoute.firstOrNull() ?: LatLng(0.0, 0.0),
+                            15f
+                        )
                     )
+                }
+                LaunchedEffect(cameraPositionState, mapPoints) {
+                    val bounds = mapPoints.toLatLngBounds()
+                    if (bounds != null && mapPoints.size > 1) {
+                        cameraPositionState.move(CameraUpdateFactory.newLatLngBounds(bounds, 96))
+                    }
                 }
 
                 GoogleMap(
@@ -90,9 +105,6 @@ fun SessionMapDialog(
                         )
                     }
 
-                    val photoPins = remember(photoUris, session.trackedRoute, context) {
-                        photoUris.toHistoryPhotoPins(context, session.trackedRoute)
-                    }
                     PhotoThumbnailMarkers(pins = photoPins)
                 }
 
@@ -186,4 +198,11 @@ private fun Uri.readExifLocation(context: Context): LatLng? {
             null
         }
     }.getOrNull()
+}
+
+private fun List<LatLng>.toLatLngBounds(): LatLngBounds? {
+    if (isEmpty()) return null
+    return LatLngBounds.builder().apply {
+        forEach { include(it) }
+    }.build()
 }

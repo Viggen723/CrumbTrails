@@ -29,6 +29,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,8 +48,10 @@ import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.routetracker.R
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.PolyUtil
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
@@ -385,12 +388,6 @@ private fun FeedRoutePreview(
     if (routePoints.isEmpty()) return
 
     val singlePointRouteMarkerState = rememberMarkerState(position = routePoints.first())
-    val cameraPositionState = remember(routeString) {
-        val centerPoint = routePoints[routePoints.size / 2]
-        CameraPositionState(
-            position = CameraPosition.fromLatLngZoom(centerPoint, 14f)
-        )
-    }
     val uiSettings = remember {
         MapUiSettings(
             zoomControlsEnabled = false,
@@ -408,6 +405,24 @@ private fun FeedRoutePreview(
             photos = photos,
             photoUrls = photoUrls
         )
+    }
+    val mapPoints = remember(routePoints, photoPins) {
+        routePoints + photoPins.map { it.position }
+    }
+    val cameraPositionState = remember(routeString) {
+        val bounds = mapPoints.toLatLngBounds()
+        CameraPositionState(
+            position = CameraPosition.fromLatLngZoom(
+                bounds?.center ?: routePoints[routePoints.size / 2],
+                14f
+            )
+        )
+    }
+    LaunchedEffect(cameraPositionState, mapPoints) {
+        val bounds = mapPoints.toLatLngBounds()
+        if (bounds != null && mapPoints.size > 1) {
+            cameraPositionState.move(CameraUpdateFactory.newLatLngBounds(bounds, 64))
+        }
     }
 
     Box(
@@ -461,11 +476,23 @@ private fun FeedRouteMapDialog(
         ) {
             var selectedPhotoPin by remember { mutableStateOf<MapPhotoPin?>(null) }
             val singlePointRouteMarkerState = rememberMarkerState(position = routePoints.first())
+            val mapPoints = remember(routePoints, photoPins) {
+                routePoints + photoPins.map { it.position }
+            }
             val cameraPositionState = remember(postId, routePoints) {
-                val centerPoint = routePoints[routePoints.size / 2]
+                val bounds = mapPoints.toLatLngBounds()
                 CameraPositionState(
-                    position = CameraPosition.fromLatLngZoom(centerPoint, 15f)
+                    position = CameraPosition.fromLatLngZoom(
+                        bounds?.center ?: routePoints[routePoints.size / 2],
+                        15f
+                    )
                 )
+            }
+            LaunchedEffect(cameraPositionState, mapPoints) {
+                val bounds = mapPoints.toLatLngBounds()
+                if (bounds != null && mapPoints.size > 1) {
+                    cameraPositionState.move(CameraUpdateFactory.newLatLngBounds(bounds, 96))
+                }
             }
 
             GoogleMap(
@@ -589,6 +616,13 @@ private fun buildFeedPhotoPins(
             )
         }
     }
+}
+
+private fun List<LatLng>.toLatLngBounds(): LatLngBounds? {
+    if (isEmpty()) return null
+    return LatLngBounds.builder().apply {
+        forEach { include(it) }
+    }.build()
 }
 
 @Preview
