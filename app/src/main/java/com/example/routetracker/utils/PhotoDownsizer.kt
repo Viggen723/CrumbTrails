@@ -3,6 +3,8 @@ package com.example.routetracker.utils
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
 import androidx.exifinterface.media.ExifInterface
 import androidx.core.graphics.drawable.toBitmap
 import coil.imageLoader
@@ -78,7 +80,7 @@ object PhotoDownsizer {
         sourceUri: Uri,
         destinationPath: String
     ) {
-        val sourceExif = context.contentResolver.openInputStream(sourceUri)?.use { inputStream ->
+        val sourceExif = context.openOriginalMediaInputStream(sourceUri)?.use { inputStream ->
             ExifInterface(inputStream)
         } ?: return
 
@@ -90,6 +92,21 @@ object PhotoDownsizer {
         }
         destinationExif.saveAttributes()
     }
+
+    private fun Context.openOriginalMediaInputStream(sourceUri: Uri) =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val originalUri = runCatching {
+                MediaStore.setRequireOriginal(sourceUri)
+            }.getOrDefault(sourceUri)
+
+            runCatching {
+                contentResolver.openInputStream(originalUri)
+            }.getOrElse {
+                contentResolver.openInputStream(sourceUri)
+            }
+        } else {
+            contentResolver.openInputStream(sourceUri)
+        }
 
     private val EXIF_ATTRIBUTES_TO_COPY = listOf(
         ExifInterface.TAG_GPS_ALTITUDE,

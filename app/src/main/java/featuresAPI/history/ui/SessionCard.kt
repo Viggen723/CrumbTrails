@@ -1,6 +1,9 @@
 package com.example.routetracker.featuresAPI.history.ui
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -24,7 +27,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import data.local.track.TrackedRoute
 import java.text.DateFormat
 import java.util.Date
@@ -40,10 +45,25 @@ fun SessionCard(
     onLegacyPhotoSelection: (List<Uri>) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val legacyPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia()
     ) { uris ->
         if (uris.isNotEmpty()) onLegacyPhotoSelection(uris)
+    }
+    fun launchPhotoPicker() {
+        if (isEmbeddedPhotoPickerSupported()) {
+            onTriggerEmbeddedPhoto()
+        } else {
+            legacyPickerLauncher.launch(
+                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+            )
+        }
+    }
+    val mediaLocationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) {
+        launchPhotoPicker()
     }
 
     Card(
@@ -97,12 +117,18 @@ fun SessionCard(
 
                 IconButton(
                     onClick = {
-                        if (isEmbeddedPhotoPickerSupported()) {
-                            onTriggerEmbeddedPhoto()
-                        } else {
-                            legacyPickerLauncher.launch(
-                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        if (
+                            Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+                            ContextCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.ACCESS_MEDIA_LOCATION
+                            ) != PackageManager.PERMISSION_GRANTED
+                        ) {
+                            mediaLocationPermissionLauncher.launch(
+                                Manifest.permission.ACCESS_MEDIA_LOCATION
                             )
+                        } else {
+                            launchPhotoPicker()
                         }
                     }
                 ) {
