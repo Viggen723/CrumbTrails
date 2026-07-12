@@ -1,12 +1,12 @@
 package com.example.routetracker.featuresAPI.history.ui
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -47,19 +47,24 @@ fun SessionCard(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val legacyPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickMultipleVisualMedia()
+    val documentPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenMultipleDocuments()
     ) { uris ->
-        if (uris.isNotEmpty()) onLegacyPhotoSelection(uris)
-    }
-    fun launchPhotoPicker() {
-        if (isEmbeddedPhotoPickerSupported()) {
-            onTriggerEmbeddedPhoto()
-        } else {
-            legacyPickerLauncher.launch(
-                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-            )
+        uris.forEach { uri ->
+            runCatching {
+                context.contentResolver.takePersistableUriPermission(
+                    uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            }
         }
+        if (uris.isNotEmpty()) {
+            onLegacyPhotoSelection(uris)
+        }
+    }
+
+    fun launchPhotoPicker() {
+        documentPickerLauncher.launch(arrayOf("image/*"))
     }
     val mediaLocationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
