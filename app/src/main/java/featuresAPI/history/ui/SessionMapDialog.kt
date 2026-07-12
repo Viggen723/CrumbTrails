@@ -1,6 +1,8 @@
 package com.example.routetracker.featuresAPI.history.ui
 
+import android.content.Context
 import android.net.Uri
+import androidx.exifinterface.media.ExifInterface
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,12 +30,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
 import com.example.routetracker.R
 import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
@@ -51,6 +55,8 @@ fun SessionMapDialog(
     onDeletePhoto: (Uri) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+
     Dialog(onDismissRequest = onDismiss) {
         Column(
             modifier = modifier
@@ -84,7 +90,9 @@ fun SessionMapDialog(
                         )
                     }
 
-                    val photoPins = photoUris.toHistoryPhotoPins(session.trackedRoute)
+                    val photoPins = remember(photoUris, session.trackedRoute, context) {
+                        photoUris.toHistoryPhotoPins(context, session.trackedRoute)
+                    }
                     PhotoThumbnailMarkers(pins = photoPins)
                 }
 
@@ -144,13 +152,38 @@ fun SessionMapDialog(
     }
 }
 
-private fun List<Uri>.toHistoryPhotoPins(routePoints: List<com.google.android.gms.maps.model.LatLng>): List<MapPhotoPin> {
+private fun List<Uri>.toHistoryPhotoPins(
+    context: Context,
+    routePoints: List<LatLng>
+): List<MapPhotoPin> {
     return mapIndexedNotNull { index, uri ->
-        fallbackRoutePosition(routePoints, index, size)?.let { position ->
+        val position = uri.readExifLocation(context)
+            ?: fallbackRoutePosition(routePoints, index, size)
+
+        position?.let {
             MapPhotoPin(
                 imageSource = uri,
-                position = position
+                position = it
             )
         }
     }
+}
+
+private fun Uri.readExifLocation(context: Context): LatLng? {
+    return runCatching {
+        val latLong = FloatArray(2)
+        val hasLocation = if (scheme == "file") {
+            ExifInterface(path ?: return null).getLatLong(latLong)
+        } else {
+            context.contentResolver.openInputStream(this)?.use { inputStream ->
+                ExifInterface(inputStream).getLatLong(latLong)
+            } ?: false
+        }
+
+        if (hasLocation) {
+            LatLng(latLong[0].toDouble(), latLong[1].toDouble())
+        } else {
+            null
+        }
+    }.getOrNull()
 }
