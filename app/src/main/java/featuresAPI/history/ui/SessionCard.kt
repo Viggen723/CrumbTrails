@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -62,7 +63,14 @@ fun SessionCard(
     }
     val mediaLocationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
-    ) {
+    ) { granted ->
+        if (!granted) {
+            Toast.makeText(
+                context,
+                "Photo location permission denied. Photos without readable GPS will use route placement.",
+                Toast.LENGTH_LONG
+            ).show()
+        }
         launchPhotoPicker()
     }
 
